@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* ── Editorial Palette ─────────────────────────── */
+  --bg:              #FAF7F2;   /* parchment off-white   */
+  --surface:         #F0EBE1;   /* warm card surface     */
+  --border-warm:     #D9CFC3;   /* muted warm border     */
+  --text-primary:    #1C1917;   /* near-black warm       */
+  --text-secondary:  #78716C;   /* stone-500             */
+  --sienna:          #A0522D;   /* sienna / terracotta   */
+  --sienna-light:    #C4844F;   /* lighter terracotta    */
+  --gold:            #B8860B;   /* dark goldenrod        */
+
+  /* ── shadcn Tokens mapped to palette ──────────── */
+  --background:          var(--bg);
+  --foreground:          var(--text-primary);
+  --card:                var(--surface);
+  --card-foreground:     var(--text-primary);
+  --popover:             var(--surface);
+  --popover-foreground:  var(--text-primary);
+  --primary:             var(--sienna);
+  --primary-foreground:  var(--bg);
+  --secondary:           var(--surface);
+  --secondary-foreground:var(--text-primary);
+  --muted:               #E6DFD5;
+  --muted-foreground:    var(--text-secondary);
+  --accent:              var(--surface);
+  --accent-foreground:   var(--text-primary);
+  --destructive:         oklch(0.577 0.245 27.325);
+  --border:              var(--border-warm);
+  --input:               var(--border-warm);
+  --ring:                #A0522D;
+  --radius:              0.35rem;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@theme inline {
+  --font-display:           'Cormorant Garamond', serif;
+  --font-body:              'DM Sans', sans-serif;
+  --font-mono:              ui-monospace, Consolas, monospace;
+
+  --color-parchment:        #FAF7F2;
+  --color-sienna:           #A0522D;
+  --color-sienna-light:     #C4844F;
+  --color-gold:             #B8860B;
+  --color-surface-card:     #F0EBE1;
+  --color-border-warm:      #D9CFC3;
+
+  --color-ring:             var(--ring);
+  --color-border:           var(--border);
+  --color-input:            var(--input);
+  --color-background:       var(--background);
+  --color-foreground:       var(--foreground);
+  --color-primary:          var(--primary);
+  --color-primary-foreground:var(--primary-foreground);
+  --color-secondary:        var(--secondary);
+  --color-secondary-foreground:var(--secondary-foreground);
+  --color-card:             var(--card);
+  --color-card-foreground:  var(--card-foreground);
+  --color-popover:          var(--popover);
+  --color-popover-foreground:var(--popover-foreground);
+  --color-muted:            var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive:      var(--destructive);
+  --color-accent:           var(--accent);
+  --color-accent-foreground:var(--accent-foreground);
+
+  --radius-sm:  calc(var(--radius) * 0.6);
+  --radius-md:  calc(var(--radius) * 0.85);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) * 1.5);
+  --radius-2xl: calc(var(--radius) * 2);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+}
+
+/* ── Custom scrollbar ────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-warm); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+/* ── Upload zone border pulse animation ─────────── */
+@keyframes border-pulse {
+  0%, 100% { border-color: var(--border-warm); box-shadow: none; }
+  50% { border-color: var(--sienna); box-shadow: 0 0 0 3px rgba(160,82,45,0.12); }
+}
+.animate-border-pulse {
+  animation: border-pulse 1.6s ease-in-out infinite;
+}
+
+/* ── Shimmer for loading ─────────────────────────── */
+@keyframes shimmer {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+.animate-shimmer { animation: shimmer 1.5s ease-in-out infinite; }
+
+/* ── Page fade-in ────────────────────────────────── */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fade-in-up 0.35s ease both; }
