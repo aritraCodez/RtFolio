@@ -456,26 +456,24 @@ export function PreviewPanel({
                           >
                             {img.caption.year}
                           </span>
-                          {img.caption.customLine !== undefined && (
-                            <div className="mt-1">
-                              <span
-                                className="outline-none rounded-[2px] px-[2px] mx-[-2px] transition-all duration-200 cursor-text min-w-[20px] inline-block hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-2 focus:ring-sienna/20 empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:italic"
-                                contentEditable
-                                suppressContentEditableWarning
-                                onBlur={(e) =>
-                                  handleCaptionBlur(
-                                    artwork,
-                                    img.id,
-                                    "customLine",
-                                    e.currentTarget.textContent || "",
-                                  )
-                                }
-                                data-placeholder="Custom Line (Optional)"
-                              >
-                                {img.caption.customLine}
-                              </span>
-                            </div>
-                          )}
+                          <div className="mt-1">
+                            <span
+                              className="outline-none rounded-[2px] px-[2px] mx-[-2px] transition-all duration-200 cursor-text min-w-[20px] inline-block hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-2 focus:ring-sienna/20 empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:italic"
+                              contentEditable
+                              suppressContentEditableWarning
+                              onBlur={(e) =>
+                                handleCaptionBlur(
+                                  artwork,
+                                  img.id,
+                                  "customLine",
+                                  e.currentTarget.textContent || "",
+                                )
+                              }
+                              data-placeholder="Custom Line (Optional)"
+                            >
+                              {img.caption.customLine || ""}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))}
