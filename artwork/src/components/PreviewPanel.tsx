@@ -383,7 +383,7 @@ export function PreviewPanel({
                           layout={
                             img.captionLayout || {
                               x: 10,
-                              y: 6,
+                              y: 48,
                               w: 100,
                               h: undefined,
                             }
