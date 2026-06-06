@@ -1,5 +1,6 @@
-import React, { createContext, useState, useCallback } from "react";
+import React, { createContext, useState, useCallback, useEffect } from "react";
 import type { Artwork, PortfolioSettings, ArtworkContextType, ImageItem } from "../types";
+import { clearDB, getArtworks, saveAllArtworks, getSettings, saveSettings } from "../lib/db";
 
 export const ArtworksContext = createContext<ArtworkContextType | undefined>(
   undefined,
@@ -38,6 +39,63 @@ export function ArtworksProvider({ children }: { children: React.ReactNode }) {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [settings, setSettings] = useState<PortfolioSettings>(DEFAULT_SETTINGS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Restore session from IndexedDB or clear on new session
+  useEffect(() => {
+    async function init() {
+      try {
+        const isSessionActive = sessionStorage.getItem("rtfolio_session_active");
+        if (!isSessionActive) {
+          // Fresh tab session: clean slate
+          await clearDB();
+          sessionStorage.setItem("rtfolio_session_active", "true");
+          setIsLoaded(true);
+        } else {
+          // Existing session: restore persisted artworks and settings
+          const dbArtworks = await getArtworks();
+          const dbSettings = await getSettings();
+          
+          if (dbArtworks && dbArtworks.length > 0) {
+            // Recreate active Blob URLs for the stored Files
+            const processedArtworks = dbArtworks.map((artwork) => ({
+              ...artwork,
+              images: artwork.images.map((img) => ({
+                ...img,
+                url: URL.createObjectURL(img.file),
+              })),
+            }));
+            setArtworks(processedArtworks);
+            setSelectedId(processedArtworks[0].id);
+          }
+          
+          if (dbSettings) {
+            setSettings(dbSettings);
+          }
+          setIsLoaded(true);
+        }
+      } catch (err) {
+        console.error("Failed to restore IndexedDB session data:", err);
+        setIsLoaded(true);
+      }
+    }
+    init();
+  }, []);
+
+  // Sync state changes to IndexedDB
+  useEffect(() => {
+    if (!isLoaded) return;
+    saveAllArtworks(artworks).catch((err) =>
+      console.error("Failed to save artworks to database:", err)
+    );
+  }, [artworks, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    saveSettings(settings).catch((err) =>
+      console.error("Failed to save settings to database:", err)
+    );
+  }, [settings, isLoaded]);
 
   const addArtwork = useCallback(
     (files: File[]) => {

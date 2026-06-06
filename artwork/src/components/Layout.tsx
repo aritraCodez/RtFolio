@@ -9,6 +9,7 @@ import { CaptionEditor } from "./CaptionEditor";
 import { PreviewPanel } from "./PreviewPanel";
 import { ExportButton } from "./ExportButton";
 import { PrivacyPolicy } from "./PrivacyPolicy";
+import logoUrl from "../assets/vite.svg";
 
 
 export function Layout() {
@@ -102,9 +103,12 @@ export function Layout() {
     <div className="flex flex-col h-screen bg-background text-foreground font-body">
       {/* Top Navigation */}
       <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-border-warm shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        <div className="flex items-baseline gap-2">
-          <h1 className="font-display text-[28px] font-semibold m-0 text-sienna">RtFolio</h1>
-          <p className="text-xs text-muted-foreground m-0 uppercase tracking-[0.5px]">Artist Portfolio Builder</p>
+        <div className="flex items-center gap-3">
+          <img src={logoUrl} alt="RtFolio logo" className="w-8 h-8 object-contain shrink-0" />
+          <div className="flex items-baseline gap-2">
+            <h1 className="font-display text-[28px] font-semibold m-0 text-sienna">RtFolio</h1>
+            <p className="text-xs text-muted-foreground m-0 uppercase tracking-[0.5px]">Artist Portfolio Builder</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           {currentView === "privacy" && (
