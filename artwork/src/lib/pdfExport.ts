@@ -43,7 +43,7 @@ function getFontSize(size: string) {
       return "15px";
   }
 }
-
+ 
 export async function exportToPDF(
   artworks: Artwork[],
   settings: PortfolioSettings,
