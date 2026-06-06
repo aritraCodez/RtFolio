@@ -44,17 +44,17 @@ export function PrivacyPolicy() {
             </div>
           </div>
 
-          {/* Card 2: Zero Storage */}
+          {/* Card 2: Local Session Persistence */}
           <div className="flex gap-4">
             <div className="w-8 h-8 rounded-lg bg-[#FAF7F2] border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
               <Database size={16} />
             </div>
             <div>
               <h3 className="font-display text-base font-semibold text-foreground m-0 mb-1">
-                Zero Personal Data Storage
+                Zero External Databases & Session Persistence
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed m-0">
-                We do not maintain user databases, require accounts, or collect any personal identifiers. Your portfolio layout, captions, and styles are kept strictly in your local browser runtime.
+                We do not maintain cloud databases, require accounts, or collect your data. For your convenience, your active portfolio layout, captions, and images are temporarily persisted in your browser's secure local sandbox (using IndexedDB) so they survive page reloads. This data is automatically wiped clean from your device as soon as you close the browser tab.
               </p>
             </div>
           </div>
