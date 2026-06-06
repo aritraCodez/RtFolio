@@ -325,7 +325,7 @@ export function PreviewPanel({
   if (artworks.length === 0) {
     return (
       <div
-        className="flex flex-col h-full bg-gradient-to-br from-[#f5f5f5] to-[#fafafa] p-3 overflow-hidden items-center justify-center"
+        className="flex flex-col h-full bg-linear-to-br from-[#f5f5f5] to-[#fafafa] p-3 overflow-hidden items-center justify-center"
         ref={containerRef}
       >
         <div className="text-center text-muted-foreground">
