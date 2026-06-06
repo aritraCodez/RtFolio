@@ -29,6 +29,7 @@ export interface ImageItem {
   height?: number;
   caption: Caption;
   captionStyle: CaptionStyle;
+  captionLayout?: ElementLayout;
 }
 
 export interface Artwork {
@@ -60,5 +61,9 @@ export interface ArtworkContextType {
   updateSettings: (partial: Partial<PortfolioSettings>) => void;
   addImagesToArtwork: (artworkId: string, files: File[]) => void;
   removeImageFromArtwork: (artworkId: string, imageId: string) => void;
-  reorderImagesInArtwork: (artworkId: string, fromIndex: number, toIndex: number) => void;
+  reorderImagesInArtwork: (
+    artworkId: string,
+    fromIndex: number,
+    toIndex: number,
+  ) => void;
 }
