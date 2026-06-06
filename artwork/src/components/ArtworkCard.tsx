@@ -42,6 +42,7 @@ export function ArtworkCard({
           </p>
           <p className="font-body text-xs text-muted-foreground m-0 truncate">
             {artwork.images[0]?.caption.artistName}
+            {artwork.images[0]?.caption.customLine && ` • ${artwork.images[0]?.caption.customLine}`}
           </p>
         </div>
       </div>
