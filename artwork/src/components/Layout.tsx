@@ -10,6 +10,7 @@ import { PreviewPanel } from "./PreviewPanel";
 import { ExportButton } from "./ExportButton";
 import { PrivacyPolicy } from "./PrivacyPolicy";
 import logoUrl from "../assets/vite.svg";
+import { useLocation, useNavigate } from "react-router-dom";
 
 
 export function Layout() {
@@ -34,16 +35,9 @@ export function Layout() {
   const [zoomScale, setZoomScale] = useState(1.0);
   const addImagesRef = useRef<HTMLInputElement>(null);
 
-  const [currentView, setCurrentView] = useState<"editor" | "privacy">("editor");
-
-  useEffect(() => {
-    const handleHashChange = () => {
-      setCurrentView(window.location.hash === "#privacy" ? "privacy" : "editor");
-    };
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentView = location.pathname === "/privacy" ? "privacy" : "editor";
 
   const selectedArtwork = useMemo(
     () => artworks.find((a) => a.id === selectedId),
@@ -114,9 +108,9 @@ export function Layout() {
           {currentView === "privacy" && (
             <button
               onClick={() => {
-                window.location.hash = "";
+                navigate("/");
               }}
-              className="text-xs text-muted-foreground hover:text-sienna cursor-pointer transition-colors duration-200 select-none mr-2 font-medium"
+              className="text-xs text-muted-foreground hover:text-sienna cursor-pointer transition-colors duration-200 select-none mr-2 font-medium flex items-center gap-1"
             ><ArrowLeft size={14} />
               Back to Portfolio Editor
             </button>
@@ -199,7 +193,7 @@ export function Layout() {
           <div className="p-4 border-t border-border-warm bg-stone-50/50 shrink-0">
             <button
               onClick={() => {
-                window.location.hash = currentView === "editor" ? "privacy" : "editor";
+                navigate(currentView === "editor" ? "/privacy" : "/");
               }}
               className="text-xs text-muted-foreground hover:text-sienna cursor-pointer transition-colors duration-200 select-none font-medium flex items-center gap-1.5"
             >
