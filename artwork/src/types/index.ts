@@ -33,8 +33,10 @@ export interface ImageItem {
   height?: number;
   caption: Caption;
   captionStyle: CaptionStyle;
+  customLineStyle?: CaptionStyle;
   captionPosition?: "header" | "footer";
   captionLayout?: ElementLayout;
+  customLineLayout?: ElementLayout;
 }
 
 export interface Artwork {

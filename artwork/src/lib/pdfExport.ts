@@ -85,8 +85,22 @@ export async function exportToPDF(
         const clone = livePages[i].cloneNode(true) as HTMLElement;
         const dims = pageDims[i];
 
-        // ── Caption cleanup BEFORE inlineComputedStyles ──
-        // inlineComputedStyles strips class attributes, so class-based queries must run first.
+        // ── Mark elements before inlineComputedStyles strips class attributes ──
+        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((el) => {
+          el.setAttribute("data-caption-block", "true");
+        });
+        clone.querySelectorAll<HTMLElement>(".custom-line-draggable").forEach((el) => {
+          el.setAttribute("data-custom-line-block", "true");
+        });
+        clone.querySelectorAll<HTMLElement>(".page-content").forEach((el) => {
+          el.setAttribute("data-page-content", "true");
+        });
+
+        // Inline computed styles FIRST on the full unmodified clone.
+        // This ensures child indices match the live source exactly (no structure mismatch).
+        inlineComputedStyles(livePages[i], clone);
+
+        // ── Cleanup AFTER inlineComputedStyles using data/title attributes ──
 
         // Step 1: Remove editing UI elements
         clone.querySelectorAll<HTMLElement>("[title='Drag to reposition']").forEach((el) => el.remove());
@@ -96,7 +110,7 @@ export async function exportToPDF(
         });
 
         // Step 2: For each caption block, rebuild commas around only the filled fields
-        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((captionBlock) => {
+        clone.querySelectorAll<HTMLElement>("[data-caption-block]").forEach((captionBlock) => {
           const textContainer = captionBlock.querySelector<HTMLElement>("div");
           if (!textContainer) return;
 
@@ -105,8 +119,9 @@ export async function exportToPDF(
             const el = child as HTMLElement;
             const text = el.textContent?.trim() ?? "";
 
-            // Skip the custom line div (mt-1)
+            // Skip the custom line div (mt-1) or inner custom line block
             if (el.tagName === "DIV" && el.classList.contains("mt-1")) return;
+            if (el.hasAttribute("data-custom-line-block")) return;
 
             // Remove empty elements and comma-only spans from the DOM
             if (text === "," || text === "") {
@@ -133,12 +148,14 @@ export async function exportToPDF(
         });
 
         // Step 4: Remove entirely empty caption blocks
-        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((el) => {
+        clone.querySelectorAll<HTMLElement>("[data-caption-block]").forEach((el) => {
           if (!el.textContent?.replace(/[\s,]/g, "")) el.remove();
         });
 
-        // Inline computed styles to freeze visual appearance (must be AFTER cleanup)
-        inlineComputedStyles(livePages[i], clone);
+        // Step 4b: Remove entirely empty custom line blocks
+        clone.querySelectorAll<HTMLElement>("[data-custom-line-block]").forEach((el) => {
+          if (!el.textContent?.trim()) el.remove();
+        });
 
         // Reset positioning styles for 1:1 scale using the actual layout dimensions
         clone.style.transform = "none";

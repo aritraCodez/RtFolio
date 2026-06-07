@@ -40,10 +40,26 @@ export function CaptionEditor({
   selectedImageId,
 }: CaptionEditorProps) {
   const [isGlobalStyle, setIsGlobalStyle] = useState(false);
+  const [styleTarget, setStyleTarget] = useState<"caption" | "customLine">("caption");
 
   const activeImage =
     artwork.images.find((img) => img.id === selectedImageId) ||
     artwork.images[0];
+
+  const activeStyle = activeImage
+    ? (styleTarget === "caption"
+        ? activeImage.captionStyle
+        : (activeImage.customLineStyle ?? activeImage.captionStyle))
+    : {
+        font: "cormorant",
+        color: "#1C1917",
+        alignment: "left" as const,
+        size: "md" as const,
+        highlightColor: "",
+        bold: false,
+        italic: false,
+        underline: false,
+      };
 
   if (!activeImage) {
     return (
@@ -77,17 +93,20 @@ export function CaptionEditor({
       const updatedImages = artwork.images.map((img) => ({
         ...img,
         captionStyle: { ...activeImage.captionStyle },
+        customLineStyle: activeImage.customLineStyle ? { ...activeImage.customLineStyle } : undefined,
       }));
       onUpdate({ images: updatedImages });
     }
   };
 
   const updateStyle = (key: keyof CaptionStyle, value: any) => {
-    const updatedImages = artwork.images.map((img) =>
-      isGlobalStyle || img.id === activeImage.id
-        ? { ...img, captionStyle: { ...img.captionStyle, [key]: value } as CaptionStyle }
-        : img
-    );
+    const styleKey = styleTarget === "caption" ? "captionStyle" : "customLineStyle";
+    const updatedImages = artwork.images.map((img) => {
+      const currentStyle = img[styleKey] ?? img.captionStyle;
+      return isGlobalStyle || img.id === activeImage.id
+        ? { ...img, [styleKey]: { ...currentStyle, [key]: value } as CaptionStyle }
+        : img;
+    });
     onUpdate({ images: updatedImages });
   };
 
@@ -138,7 +157,25 @@ export function CaptionEditor({
   return (
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
-        <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>
+        <div className="flex flex-col">
+          <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>
+          {activeImage.captionLayout && (
+            <button
+              type="button"
+              onClick={() => {
+                const updatedImages = artwork.images.map((img) =>
+                  img.id === activeImage.id
+                    ? { ...img, captionLayout: undefined }
+                    : img
+                );
+                onUpdate({ images: updatedImages });
+              }}
+              className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit mt-0.5"
+            >
+              Reset Caption Position
+            </button>
+          )}
+        </div>
         {/* Caption Position toggle */}
         <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
           <button
@@ -223,7 +260,25 @@ export function CaptionEditor({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="customLine">Custom Line (Optional)</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="customLine">Custom Line (Optional)</Label>
+          {activeImage.customLineLayout && (
+            <button
+              type="button"
+              onClick={() => {
+                const updatedImages = artwork.images.map((img) =>
+                  img.id === activeImage.id
+                    ? { ...img, customLineLayout: undefined }
+                    : img
+                );
+                onUpdate({ images: updatedImages });
+              }}
+              className="text-xs text-sienna hover:underline font-medium cursor-pointer"
+            >
+              Reset Position
+            </button>
+          )}
+        </div>
         <Input
           id="customLine"
           value={activeImage.caption.customLine || ""}
@@ -231,6 +286,11 @@ export function CaptionEditor({
           placeholder="Additional info"
           className="bg-background border-border-warm text-foreground hover:border-sienna transition-all duration-200 focus-visible:ring-sienna/10 focus-visible:border-sienna h-10 px-3 py-2"
         />
+        {activeImage.customLineLayout && (
+          <p className="text-[11px] text-muted-foreground m-0 -mt-1 italic">
+            Custom line is positioned independently. Drag it to reposition.
+          </p>
+        )}
       </div>
 
       {/* Caption Preview */}
@@ -261,15 +321,57 @@ export function CaptionEditor({
           {activeImage.caption.customLine && (
             <>
               <br />
-              {activeImage.caption.customLine}
+              <span
+                style={{
+                  fontFamily: getFontFamily((activeImage.customLineStyle ?? activeImage.captionStyle).font),
+                  fontSize: getFontSize((activeImage.customLineStyle ?? activeImage.captionStyle).size),
+                  color: (activeImage.customLineStyle ?? activeImage.captionStyle).color,
+                  backgroundColor: (activeImage.customLineStyle ?? activeImage.captionStyle).highlightColor || "transparent",
+                  fontWeight: (activeImage.customLineStyle ?? activeImage.captionStyle).bold ? "bold" : "normal",
+                  fontStyle: (activeImage.customLineStyle ?? activeImage.captionStyle).italic ? "italic" : "normal",
+                  textDecoration: (activeImage.customLineStyle ?? activeImage.captionStyle).underline ? "underline" : "none",
+                  padding: (activeImage.customLineStyle ?? activeImage.captionStyle).highlightColor ? "2px 6px" : "0",
+                  borderRadius: (activeImage.customLineStyle ?? activeImage.captionStyle).highlightColor ? "3px" : "0",
+                  display: "inline-block",
+                  marginTop: "4px",
+                }}
+              >
+                {activeImage.caption.customLine}
+              </span>
             </>
           )}
         </p>
       </div>
 
       <hr className="border-t border-border-warm my-0 w-full" />
-      <div className="flex flex-col gap-1.5">
-        <h4 className="font-body text-[13px] font-semibold text-muted-foreground m-0 uppercase tracking-[0.5px]">Caption Styling</h4>
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h4 className="font-body text-[13px] font-semibold text-muted-foreground m-0 uppercase tracking-[0.5px]">Caption Styling</h4>
+          <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
+            <button
+              type="button"
+              onClick={() => setStyleTarget("caption")}
+              className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium font-body transition-all duration-200 cursor-pointer ${
+                styleTarget === "caption"
+                  ? "bg-sienna text-white shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Main
+            </button>
+            <button
+              type="button"
+              onClick={() => setStyleTarget("customLine")}
+              className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium font-body transition-all duration-200 cursor-pointer ${
+                styleTarget === "customLine"
+                  ? "bg-sienna text-white shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Custom Line
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-2 mt-0.5 py-0.5">
           <input
             type="checkbox"
@@ -288,7 +390,7 @@ export function CaptionEditor({
         <Label>Font</Label>
         <div className="relative">
           <select
-            value={activeImage.captionStyle.font}
+            value={activeStyle.font}
             onChange={(e) => updateStyle("font", e.target.value)}
             className="w-full h-10 border border-border-warm rounded-md bg-background text-foreground text-sm font-body px-3 py-2 pr-10 appearance-none cursor-pointer focus:outline-none focus:border-sienna focus:ring-2 focus:ring-sienna/10 transition-colors"
           >
@@ -309,10 +411,11 @@ export function CaptionEditor({
             <button
               key={opt.value}
               type="button"
-              className={`px-3 py-2 border rounded-md text-[13px] font-body cursor-pointer transition-all duration-200 ${activeImage.captionStyle.size === opt.value
+              className={`px-3 py-2 border rounded-md text-[13px] font-body cursor-pointer transition-all duration-200 ${
+                activeStyle.size === opt.value
                   ? "bg-sienna text-white border-sienna"
                   : "bg-background text-foreground border-border-warm hover:border-sienna"
-                }`}
+              }`}
               onClick={() => updateStyle("size", opt.value)}
             >
               {opt.label}
@@ -324,7 +427,7 @@ export function CaptionEditor({
       <div className="flex flex-col gap-2">
         <Label>Alignment</Label>
         <ToggleGroup
-          value={activeImage.captionStyle.alignment}
+          value={activeStyle.alignment}
           onValueChange={(value) => {
             if (value) updateStyle("alignment", value);
           }}
@@ -351,11 +454,11 @@ export function CaptionEditor({
           <button
             type="button"
             className={`w-10 h-10 border rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ${
-              activeImage.captionStyle.bold
+              activeStyle.bold
                 ? "bg-sienna text-white border-sienna shadow-sm"
                 : "bg-background text-foreground border-border-warm hover:border-sienna"
             }`}
-            onClick={() => updateStyle("bold", !activeImage.captionStyle.bold)}
+            onClick={() => updateStyle("bold", !activeStyle.bold)}
             title="Bold"
           >
             <Bold size={16} />
@@ -363,11 +466,11 @@ export function CaptionEditor({
           <button
             type="button"
             className={`w-10 h-10 border rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ${
-              activeImage.captionStyle.italic
+              activeStyle.italic
                 ? "bg-sienna text-white border-sienna shadow-sm"
                 : "bg-background text-foreground border-border-warm hover:border-sienna"
             }`}
-            onClick={() => updateStyle("italic", !activeImage.captionStyle.italic)}
+            onClick={() => updateStyle("italic", !activeStyle.italic)}
             title="Italic"
           >
             <Italic size={16} />
@@ -375,11 +478,11 @@ export function CaptionEditor({
           <button
             type="button"
             className={`w-10 h-10 border rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ${
-              activeImage.captionStyle.underline
+              activeStyle.underline
                 ? "bg-sienna text-white border-sienna shadow-sm"
                 : "bg-background text-foreground border-border-warm hover:border-sienna"
             }`}
-            onClick={() => updateStyle("underline", !activeImage.captionStyle.underline)}
+            onClick={() => updateStyle("underline", !activeStyle.underline)}
             title="Underline"
           >
             <Underline size={16} />
@@ -394,10 +497,11 @@ export function CaptionEditor({
             <button
               key={color}
               type="button"
-              className={`w-9 h-9 rounded-md border-2 border-transparent cursor-pointer transition-all duration-200 hover:shadow-md active:scale-95 ${activeImage.captionStyle.color === color
+              className={`w-9 h-9 rounded-md border-2 border-transparent cursor-pointer transition-all duration-200 hover:shadow-md active:scale-95 ${
+                activeStyle.color === color
                   ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
                   : ""
-                }`}
+              }`}
               style={{ backgroundColor: color }}
               onClick={() => updateStyle("color", color)}
               title={color}
@@ -405,7 +509,7 @@ export function CaptionEditor({
           ))}
           <input
             type="color"
-            value={activeImage.captionStyle.color}
+            value={activeStyle.color}
             onChange={(e) => updateStyle("color", e.target.value)}
             className="w-9 h-9 border-2 border-border-warm rounded-md cursor-pointer bg-transparent p-0 overflow-hidden"
             title="Custom color"
@@ -421,7 +525,7 @@ export function CaptionEditor({
               key={color || "none"}
               type="button"
               className={`w-9 h-9 rounded-md border border-neutral-200 cursor-pointer transition-all duration-200 hover:shadow-md active:scale-95 flex items-center justify-center relative overflow-hidden ${
-                (activeImage.captionStyle.highlightColor || "") === color
+                (activeStyle.highlightColor || "") === color
                   ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
                   : ""
               }`}
@@ -436,7 +540,7 @@ export function CaptionEditor({
           ))}
           <input
             type="color"
-            value={activeImage.captionStyle.highlightColor || "#FEF08A"}
+            value={activeStyle.highlightColor || "#FEF08A"}
             onChange={(e) => updateStyle("highlightColor", e.target.value)}
             className="w-9 h-9 border-2 border-border-warm rounded-md cursor-pointer bg-transparent p-0 overflow-hidden"
             title="Custom highlight color"
