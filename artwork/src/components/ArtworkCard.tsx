@@ -34,7 +34,7 @@ export function ArtworkCard({
         <img
           src={artwork.images[0]?.url}
 
-          className="w-[60px] h-[60px] object-cover rounded-md border border-border-warm shrink-0"
+          className="w-15 h-15 object-cover rounded-md border border-border-warm shrink-0"
         />
         <div className="flex-1 min-w-0">
           <p className="font-display text-sm font-medium text-foreground m-0 truncate">

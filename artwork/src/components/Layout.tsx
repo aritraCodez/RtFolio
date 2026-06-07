@@ -173,7 +173,7 @@ export function Layout() {
                   className="flex items-center gap-3 p-3 border border-dashed border-border-warm hover:border-sienna hover:bg-sienna/5 rounded-lg cursor-pointer transition-all duration-200 active:scale-[0.99] select-none"
                   title="Add simultaneously another project"
                 >
-                  <div className="w-[60px] h-[60px] flex items-center justify-center border border-dashed border-border-warm rounded-md bg-stone-50/50 text-muted-foreground shrink-0">
+                  <div className="w-15 h-15 flex items-center justify-center border border-dashed border-border-warm rounded-md bg-stone-50/50 text-muted-foreground shrink-0">
                     <Plus size={20} />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
@@ -212,7 +212,7 @@ export function Layout() {
           ) : (
             <div className="flex flex-col h-full overflow-y-auto">
               {/* Image Gallery */}
-              <div className="p-5 md:px-6 bg-white border-b border-border-warm flex-shrink-0">
+              <div className="p-5 md:px-6 bg-white border-b border-border-warm shrink-0">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-display text-base font-semibold m-0 text-foreground">
                     Images ({selectedArtwork.images.length})
@@ -259,7 +259,7 @@ export function Layout() {
                         />
                         {selectedArtwork.images.length > 1 && (
                           <button
-                            className="absolute top-1 right-1 w-[22px] h-[22px] flex items-center justify-center bg-black/65 text-white border-none rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-650"
+                            className="absolute top-1 right-1 w-5.5 h-5.5 flex items-center justify-center bg-black/65 text-white border-none rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-650"
                             onClick={(e) => {
                               e.stopPropagation();
                               removeImageFromArtwork(selectedArtwork.id, img.id);
@@ -324,7 +324,7 @@ export function Layout() {
 
       {/* Fullscreen A4 Editor Modal */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-[#2a2a2a] z-[2000] flex flex-col animate-fade-in">
+        <div className="fixed inset-0 bg-[#2a2a2a] z-2000 flex flex-col animate-fade-in">
           {/* Top PDF-like Toolbar */}
           <div className="bg-[#1e1e1e] text-white border-b border-neutral-800 px-6 py-3 flex items-center justify-between z-50 shadow-md">
             <div className="flex items-center gap-3">
@@ -343,7 +343,7 @@ export function Layout() {
               >
                 -
               </button>
-              <span className="text-xs font-mono font-medium px-2 min-w-[50px] text-center text-neutral-300 select-none">
+              <span className="text-xs font-mono font-medium px-2 min-w-12.5 text-center text-neutral-300 select-none">
                 {Math.round(zoomScale * 100)}%
               </span>
               <button
@@ -353,7 +353,7 @@ export function Layout() {
               >
                 +
               </button>
-              <div className="w-[1px] h-4 bg-neutral-700 mx-1" />
+              <div className="w-px h-4 bg-neutral-700 mx-1" />
               <button
                 onClick={() => setZoomScale(1.0)}
                 className="text-xs px-2 py-1 hover:bg-neutral-700 rounded text-neutral-300 font-medium transition-colors cursor-pointer"

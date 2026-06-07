@@ -166,7 +166,7 @@ export function CaptionEditor({
             id="year"
             value={activeImage.caption.year}
             onChange={(e) => updateCaption("year", e.target.value)}
-            placeholder="2024"
+            placeholder="Art of the year (example: 2026)"
             className="bg-background border-border-warm text-foreground hover:border-sienna transition-all duration-200 focus-visible:ring-sienna/10 focus-visible:border-sienna h-10 px-3 py-2"
           />
         </div>
@@ -198,7 +198,7 @@ export function CaptionEditor({
       <div className="p-4 bg-surface-card border border-border-warm rounded-lg">
         <p className="text-xs text-muted-foreground m-0 mb-2 uppercase tracking-[0.5px] font-semibold">Live Caption Preview</p>
         <p
-          className="m-0 leading-relaxed break-words"
+          className="m-0 leading-relaxed wrap-break-words"
           style={{
             fontFamily: getFontFamily(activeImage.captionStyle.font),
             fontSize: getFontSize(activeImage.captionStyle.size),

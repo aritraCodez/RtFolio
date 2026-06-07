@@ -23,7 +23,7 @@ function createImageItem(file: File): ImageItem {
       area: "",
       dimensions: "",
       medium: "",
-      year: new Date().getFullYear().toString(),
+      year: "",
       customLine: "",
     },
     captionStyle: {

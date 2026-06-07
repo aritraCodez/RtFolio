@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { GripVertical, Download, Loader2 } from "lucide-react";
-import { exportToPDF } from "../lib/pdfExport";
+import { GripVertical } from "lucide-react";
 import type {
   Artwork,
   PortfolioSettings,
@@ -357,19 +356,6 @@ export function PreviewPanel({
     [onUpdateArtwork],
   );
 
-  const [isDownloading, setIsDownloading] = useState(false);
-
-  const handleDownload = async () => {
-    setIsDownloading(true);
-    try {
-      await exportToPDF(artworks, settings, containerRef.current || undefined);
-    } catch (error) {
-      console.error("PDF export error:", error);
-      alert("Failed to export PDF. Please try again.");
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   if (artworks.length === 0) {
     return (
@@ -411,7 +397,7 @@ export function PreviewPanel({
                   min-h set to A4 content height (1123 - 120px padding = 1003px).
                 */}
                 <div
-                  className="page-content p-[60px] min-h-[1123px] font-body text-foreground relative"
+                  className="page-content p-15 min-h-280.75 font-body text-foreground relative"
                 >
                   {/* Images & Captions Stack — flex column for default flow */}
                   <div className="flex flex-col gap-10 mb-6 items-center w-full">
@@ -483,7 +469,7 @@ export function PreviewPanel({
                               {/* All spans are inline (default) — they obey parent text-align */}
                               {showArtist && (
                                 <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
                                   contentEditable
                                   suppressContentEditableWarning
                                   onBlur={(e) => handleCaptionBlur(artwork, img.id, "artistName", e.currentTarget.textContent || "")}
@@ -500,7 +486,7 @@ export function PreviewPanel({
                               {showArea && (
                                 <em>
                                   <span
-                                    className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:not-italic"
+                                    className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:not-italic"
                                     contentEditable
                                     suppressContentEditableWarning
                                     onBlur={(e) => handleCaptionBlur(artwork, img.id, "area", e.currentTarget.textContent || "")}
@@ -517,7 +503,7 @@ export function PreviewPanel({
 
                               {showDimensions && (
                                 <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
                                   contentEditable
                                   suppressContentEditableWarning
                                   onBlur={(e) => handleCaptionBlur(artwork, img.id, "dimensions", e.currentTarget.textContent || "")}
@@ -533,7 +519,7 @@ export function PreviewPanel({
 
                               {showMedium && (
                                 <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
                                   contentEditable
                                   suppressContentEditableWarning
                                   onBlur={(e) => handleCaptionBlur(artwork, img.id, "medium", e.currentTarget.textContent || "")}
@@ -549,7 +535,7 @@ export function PreviewPanel({
 
                               {showYear && (
                                 <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
                                   contentEditable
                                   suppressContentEditableWarning
                                   onBlur={(e) => handleCaptionBlur(artwork, img.id, "year", e.currentTarget.textContent || "")}
@@ -565,7 +551,7 @@ export function PreviewPanel({
                                 style={{ textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"] }}
                               >
                                 <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
                                   contentEditable
                                   suppressContentEditableWarning
                                   onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
@@ -592,7 +578,7 @@ export function PreviewPanel({
                     >
                       <hr className="border-none border-t border-border-warm my-5" />
                       <p
-                        className="text-[13px] text-muted-foreground leading-relaxed m-0 wrap-break-words min-h-[1em] outline-none rounded-[2px] px-[2px] mx-[-2px] transition-all duration-200 cursor-text block hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-2 focus:ring-sienna/20 empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:italic"
+                        className="text-[13px] text-muted-foreground leading-relaxed m-0 wrap-break-words min-h-[1em] outline-none rounded-xs px-0.5 mx-0.5 transition-all duration-200 cursor-text block hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-2 focus:ring-sienna/20 empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:italic"
                         contentEditable
                         suppressContentEditableWarning
                         onBlur={(e) => handleBiographyBlur(artwork, e.currentTarget.textContent || "")}
@@ -606,7 +592,7 @@ export function PreviewPanel({
               </div>
 
               {index < artworks.length - 1 && (
-                <div className="h-[2px] w-3/5 bg-linear-to-r from-transparent via-border-warm to-transparent my-1 mx-auto" />
+                <div className="h-0.5 w-3/5 bg-linear-to-r from-transparent via-border-warm to-transparent my-1 mx-auto" />
               )}
             </div>
           ))}
