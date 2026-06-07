@@ -7,7 +7,7 @@ export interface CaptionStyle {
 
 export interface Caption {
   artistName: string;
-  title: string;
+  area: string;
   dimensions: string;
   medium: string;
   year: string;

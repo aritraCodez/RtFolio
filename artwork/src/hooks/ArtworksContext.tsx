@@ -1,6 +1,6 @@
 import React, { createContext, useState, useCallback, useEffect } from "react";
 import type { Artwork, PortfolioSettings, ArtworkContextType, ImageItem } from "../types";
-import { clearDB, getArtworks, saveAllArtworks, getSettings, saveSettings } from "../lib/db";
+import { clearDB, getArtworks, saveAllArtworks, getSettings, saveSettings } from "../lib/indexdb";
 
 export const ArtworksContext = createContext<ArtworkContextType | undefined>(
   undefined,
@@ -20,7 +20,7 @@ function createImageItem(file: File): ImageItem {
     url: URL.createObjectURL(file),
     caption: {
       artistName: "",
-      title: "",
+      area: "",
       dimensions: "",
       medium: "",
       year: new Date().getFullYear().toString(),

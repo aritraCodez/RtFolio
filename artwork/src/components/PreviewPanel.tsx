@@ -417,14 +417,14 @@ export function PreviewPanel({
                   <div className="flex flex-col gap-10 mb-6 items-center w-full">
                     {artwork.images.map((img) => {
                       const hasArtist = !!img.caption.artistName?.trim();
-                      const hasTitle = !!img.caption.title?.trim();
+                      const hasArea = !!img.caption.area?.trim();
                       const hasDimensions = !!img.caption.dimensions?.trim();
                       const hasMedium = !!img.caption.medium?.trim();
                       const hasYear = !!img.caption.year?.trim();
-                      const allEmpty = !hasArtist && !hasTitle && !hasDimensions && !hasMedium && !hasYear;
+                      const allEmpty = !hasArtist && !hasArea && !hasDimensions && !hasMedium && !hasYear;
 
                       const showArtist = hasArtist || allEmpty;
-                      const showTitle = hasTitle || allEmpty;
+                      const showArea = hasArea || allEmpty;
                       const showDimensions = hasDimensions || allEmpty;
                       const showMedium = hasMedium || allEmpty;
                       const showYear = hasYear || allEmpty;
@@ -493,25 +493,25 @@ export function PreviewPanel({
                                 </span>
                               )}
 
-                              {((hasArtist && (hasTitle || hasDimensions || hasMedium || hasYear)) || allEmpty) && (
+                              {((hasArtist && (hasArea || hasDimensions || hasMedium || hasYear)) || allEmpty) && (
                                 <span>, </span>
                               )}
 
-                              {showTitle && (
+                              {showArea && (
                                 <em>
                                   <span
                                     className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-[2px] empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:not-italic"
                                     contentEditable
                                     suppressContentEditableWarning
-                                    onBlur={(e) => handleCaptionBlur(artwork, img.id, "title", e.currentTarget.textContent || "")}
+                                    onBlur={(e) => handleCaptionBlur(artwork, img.id, "area", e.currentTarget.textContent || "")}
                                     data-placeholder="Area"
                                   >
-                                    {img.caption.title}
+                                    {img.caption.area}
                                   </span>
                                 </em>
                               )}
 
-                              {((hasTitle && (hasDimensions || hasMedium || hasYear)) || allEmpty) && (
+                              {((hasArea && (hasDimensions || hasMedium || hasYear)) || allEmpty) && (
                                 <span>, </span>
                               )}
 
