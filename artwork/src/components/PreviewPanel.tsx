@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { GripVertical } from "lucide-react";
+import { GripVertical, Mail, Phone, Globe, MapPin } from "lucide-react";
 import type {
   Artwork,
   PortfolioSettings,
@@ -399,6 +399,70 @@ export function PreviewPanel({
                 <div
                   className="page-content p-15 min-h-280.75 font-body text-foreground relative"
                 >
+                  {/* ── Page Header (résumé-style contact info) ── */}
+                  {settings.showPageHeader && (() => {
+                    const hFont = settings.headerFont ?? "cormorant";
+                    const hColor = settings.headerColor ?? "#1C1917";
+                    const hAlign = settings.headerAlignment ?? "left";
+                    const hSize = settings.headerSize ?? "md";
+                    const nameSizePx = hSize === "sm" ? "18px" : hSize === "lg" ? "28px" : "22px";
+                    const detailSizePx = hSize === "sm" ? "9px" : hSize === "lg" ? "13px" : "11px";
+                    const justifyMap = { left: "flex-start", center: "center", right: "flex-end" } as const;
+                    return (
+                      <div
+                        className="mb-8 pb-5 border-b border-stone-200"
+                        style={{ textAlign: hAlign }}
+                      >
+                        {settings.headerArtistName && (
+                          <h2
+                            className="m-0 mb-2 leading-tight font-semibold"
+                            style={{
+                              fontFamily: getFontFamily(hFont),
+                              fontSize: nameSizePx,
+                              color: hColor,
+                            }}
+                          >
+                            {settings.headerArtistName}
+                          </h2>
+                        )}
+                        <div
+                          className="flex flex-wrap gap-x-5 gap-y-1.5 font-body"
+                          style={{
+                            fontSize: detailSizePx,
+                            color: hColor,
+                            opacity: 0.72,
+                            justifyContent: justifyMap[hAlign],
+                          }}
+                        >
+                          {settings.headerEmail && (
+                            <span className="flex items-center gap-1.5">
+                              <Mail size={parseInt(detailSizePx) - 1} className="shrink-0" style={{ color: hColor }} />
+                              {settings.headerEmail}
+                            </span>
+                          )}
+                          {settings.headerPhone && (
+                            <span className="flex items-center gap-1.5">
+                              <Phone size={parseInt(detailSizePx) - 1} className="shrink-0" style={{ color: hColor }} />
+                              {settings.headerPhone}
+                            </span>
+                          )}
+                          {settings.headerWebsite && (
+                            <span className="flex items-center gap-1.5">
+                              <Globe size={parseInt(detailSizePx) - 1} className="shrink-0" style={{ color: hColor }} />
+                              {settings.headerWebsite}
+                            </span>
+                          )}
+                          {settings.headerLocation && (
+                            <span className="flex items-center gap-1.5">
+                              <MapPin size={parseInt(detailSizePx) - 1} className="shrink-0" style={{ color: hColor }} />
+                              {settings.headerLocation}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
                   {/* Images & Captions Stack — flex column for default flow */}
                   <div className="flex flex-col gap-10 mb-6 items-center w-full">
                     {artwork.images.map((img) => {
@@ -415,11 +479,138 @@ export function PreviewPanel({
                       const showMedium = hasMedium || allEmpty;
                       const showYear = hasYear || allEmpty;
 
+                      const captionPosition = img.captionPosition ?? "footer";
+
+                      const captionBlock = (
+                        <DraggableBlock
+                          layout={img.captionLayout}
+                          onLayoutChange={(newLayout) => {
+                            if (onUpdateArtwork) {
+                              const updatedImages = artwork.images.map((i) =>
+                                i.id === img.id ? { ...i, captionLayout: newLayout } : i,
+                              );
+                              onUpdateArtwork(artwork.id, { images: updatedImages });
+                            }
+                          }}
+                          className="caption-draggable"
+                        >
+                          <div
+                            style={{
+                              fontFamily: getFontFamily(img.captionStyle.font),
+                              fontSize: getFontSize(img.captionStyle.size),
+                              color: img.captionStyle.color,
+                              textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"],
+                              width: "100%",
+                              minWidth: "280px",
+                              display: "block",
+                              lineHeight: "1.6",
+                              whiteSpace: "normal",
+                            }}
+                          >
+                            {/* All spans are inline (default) — they obey parent text-align */}
+                            {showArtist && (
+                              <span
+                                className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => handleCaptionBlur(artwork, img.id, "artistName", e.currentTarget.textContent || "")}
+                                data-placeholder="Artist Name"
+                              >
+                                {img.caption.artistName}
+                              </span>
+                            )}
+
+                            {((hasArtist && (hasArea || hasDimensions || hasMedium || hasYear)) || allEmpty) && (
+                              <span>, </span>
+                            )}
+
+                            {showArea && (
+                              <em>
+                                <span
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:not-italic"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "area", e.currentTarget.textContent || "")}
+                                  data-placeholder="Area"
+                                >
+                                  {img.caption.area}
+                                </span>
+                              </em>
+                            )}
+
+                            {((hasArea && (hasDimensions || hasMedium || hasYear)) || allEmpty) && (
+                              <span>, </span>
+                            )}
+
+                            {showDimensions && (
+                              <span
+                                className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => handleCaptionBlur(artwork, img.id, "dimensions", e.currentTarget.textContent || "")}
+                                data-placeholder="Dimensions"
+                              >
+                                {img.caption.dimensions}
+                              </span>
+                            )}
+
+                            {((hasDimensions && (hasMedium || hasYear)) || allEmpty) && (
+                              <span>, </span>
+                            )}
+
+                            {showMedium && (
+                              <span
+                                className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => handleCaptionBlur(artwork, img.id, "medium", e.currentTarget.textContent || "")}
+                                data-placeholder="Medium"
+                              >
+                                {img.caption.medium}
+                              </span>
+                            )}
+
+                            {((hasMedium && hasYear) || allEmpty) && (
+                              <span>, </span>
+                            )}
+
+                            {showYear && (
+                              <span
+                                className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => handleCaptionBlur(artwork, img.id, "year", e.currentTarget.textContent || "")}
+                                data-placeholder="Year"
+                              >
+                                {img.caption.year}
+                              </span>
+                            )}
+
+                            {/* Custom line on its own line */}
+                            <div
+                              className="mt-1"
+                              style={{ textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"] }}
+                            >
+                              <span
+                                className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                contentEditable
+                                suppressContentEditableWarning
+                                onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
+                                data-placeholder="Custom Line (Optional)"
+                              >
+                                {img.caption.customLine || ""}
+                              </span>
+                            </div>
+                          </div>
+                        </DraggableBlock>
+                      );
+
                       return (
                         <div
                           key={img.id}
                           className="relative flex flex-col gap-3 w-full"
                         >
+                          {captionPosition === "header" && captionBlock}
                           <ResizableImage
                             img={img}
                             artworkId={artwork.id}
@@ -433,135 +624,7 @@ export function PreviewPanel({
                               }
                             }}
                           />
-
-                          {/*
-                            Caption DraggableBlock:
-                            - No layout initially → stays in normal flow below image
-                            - Once dragged → layout saved → renders as position:absolute
-                              anywhere on the page, both X and Y
-                            - width stretches to right edge so text-align works correctly
-                          */}
-                          <DraggableBlock
-                            layout={img.captionLayout}
-                            onLayoutChange={(newLayout) => {
-                              if (onUpdateArtwork) {
-                                const updatedImages = artwork.images.map((i) =>
-                                  i.id === img.id ? { ...i, captionLayout: newLayout } : i,
-                                );
-                                onUpdateArtwork(artwork.id, { images: updatedImages });
-                              }
-                            }}
-                            className="caption-draggable"
-                          >
-                            <div
-                              style={{
-                                fontFamily: getFontFamily(img.captionStyle.font),
-                                fontSize: getFontSize(img.captionStyle.size),
-                                color: img.captionStyle.color,
-                                textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"],
-                                width: "100%",
-                                minWidth: "280px",
-                                display: "block",
-                                lineHeight: "1.6",
-                                whiteSpace: "normal",
-                              }}
-                            >
-                              {/* All spans are inline (default) — they obey parent text-align */}
-                              {showArtist && (
-                                <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "artistName", e.currentTarget.textContent || "")}
-                                  data-placeholder="Artist Name"
-                                >
-                                  {img.caption.artistName}
-                                </span>
-                              )}
-
-                              {((hasArtist && (hasArea || hasDimensions || hasMedium || hasYear)) || allEmpty) && (
-                                <span>, </span>
-                              )}
-
-                              {showArea && (
-                                <em>
-                                  <span
-                                    className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:not-italic"
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onBlur={(e) => handleCaptionBlur(artwork, img.id, "area", e.currentTarget.textContent || "")}
-                                    data-placeholder="Area"
-                                  >
-                                    {img.caption.area}
-                                  </span>
-                                </em>
-                              )}
-
-                              {((hasArea && (hasDimensions || hasMedium || hasYear)) || allEmpty) && (
-                                <span>, </span>
-                              )}
-
-                              {showDimensions && (
-                                <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "dimensions", e.currentTarget.textContent || "")}
-                                  data-placeholder="Dimensions"
-                                >
-                                  {img.caption.dimensions}
-                                </span>
-                              )}
-
-                              {((hasDimensions && (hasMedium || hasYear)) || allEmpty) && (
-                                <span>, </span>
-                              )}
-
-                              {showMedium && (
-                                <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "medium", e.currentTarget.textContent || "")}
-                                  data-placeholder="Medium"
-                                >
-                                  {img.caption.medium}
-                                </span>
-                              )}
-
-                              {((hasMedium && hasYear) || allEmpty) && (
-                                <span>, </span>
-                              )}
-
-                              {showYear && (
-                                <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "year", e.currentTarget.textContent || "")}
-                                  data-placeholder="Year"
-                                >
-                                  {img.caption.year}
-                                </span>
-                              )}
-
-                              {/* Custom line on its own line */}
-                              <div
-                                className="mt-1"
-                                style={{ textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"] }}
-                              >
-                                <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
-                                  data-placeholder="Custom Line (Optional)"
-                                >
-                                  {img.caption.customLine || ""}
-                                </span>
-                              </div>
-                            </div>
-                          </DraggableBlock>
+                          {captionPosition === "footer" && captionBlock}
                         </div>
                       );
                     })}
