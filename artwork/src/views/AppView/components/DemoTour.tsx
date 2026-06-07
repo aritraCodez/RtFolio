@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect, useRef, useLayoutEffect } from "react";
-import { X } from "lucide-react";
-import { useArtworks } from "../hooks/useArtworks";
+import { useArtworks } from "@/hooks/useArtworks";
 
 interface TourStep {
   title: string;
@@ -52,6 +51,18 @@ const TOUR_STEPS: TourStep[] = [
     placement: "bottom"
   },
   {
+    title: "🖼️ Drag & Resize Images",
+    content: "Hover over the image to reveal its handles: drag the left handle to move it anywhere on the page, or drag the bottom-right corner to resize/stretch it proportionally.",
+    targetId: "tour-draggable-image",
+    placement: "right"
+  },
+  {
+    title: "✍️ Edit, Drag, Scale & Remove Captions",
+    content: "Captions are fully interactive: click and type directly to edit, drag the left handle to position, drag the bottom-right corner to stretch/resize text font sizes, or click the X on the right to remove it completely.",
+    targetId: "tour-draggable-caption",
+    placement: "bottom"
+  },
+  {
     title: "✂️ Page Cropping",
     content: "Hover over the bottom border of any A4 page in the preview to reveal the crop handle. Click and drag it up or down to crop or extend the page height custom!",
     targetId: "tour-crop-handle",
@@ -83,12 +94,42 @@ interface DemoTourProps {
 }
 
 export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourProps) {
-  const { artworks, addArtwork, updateArtwork } = useArtworks();
+  const { artworks, addArtwork, updateArtwork, removeArtwork } = useArtworks();
   const [tourStep, setTourStep] = useState<number | null>(null);
+  const [demoArtworkId, setDemoArtworkId] = useState<string | null>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
   const [arrowClass, setArrowClass] = useState<string>("");
   const [arrowStyle, setArrowStyle] = useState<React.CSSProperties>({});
   const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Track the ID of the created demo artwork so we can clean it up on exit
+  useEffect(() => {
+    if (isActive && artworks.length > 0 && !demoArtworkId) {
+      const firstArtwork = artworks[0];
+      const isDemo = firstArtwork.images.length === 2 && 
+                     firstArtwork.images.some(img => img.file.name === "abstract_painting_1.jpg");
+      if (isDemo) {
+        setDemoArtworkId(firstArtwork.id);
+      }
+    }
+  }, [isActive, artworks, demoArtworkId]);
+
+  const handleClose = useCallback(() => {
+    let targetId = demoArtworkId;
+    if (!targetId && artworks.length > 0) {
+      const firstArtwork = artworks[0];
+      const isDemo = firstArtwork.images.length === 2 && 
+                     firstArtwork.images.some(img => img.file.name === "abstract_painting_1.jpg");
+      if (isDemo) {
+        targetId = firstArtwork.id;
+      }
+    }
+    if (targetId) {
+      removeArtwork(targetId);
+      setDemoArtworkId(null);
+    }
+    onClose();
+  }, [demoArtworkId, artworks, removeArtwork, onClose]);
 
   // Initialize tour step when active
   useEffect(() => {
@@ -104,10 +145,10 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
     }
   }, [isActive, artworks.length, addArtwork]);
 
-  // Trigger fullscreen modal on steps 7, 8, and 9
+  // Trigger fullscreen modal on steps 7, 8, 9, 10, and 11
   useEffect(() => {
     if (isActive && tourStep !== null) {
-      if (tourStep === 6 || tourStep === 7 || tourStep === 8) {
+      if (tourStep >= 6 && tourStep <= 10) {
         onTriggerFullscreen?.(true);
       } else {
         onTriggerFullscreen?.(false);
@@ -131,7 +172,7 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
             ...sampleArtwork.images[0],
             url: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&auto=format&fit=crop&q=80",
             caption: {
-              artistName: "Partho Chatterjee",
+              artistName: "Arjun",
               area: "Delhi",
               dimensions: "40\" x 40\"",
               medium: "Mixed Media on Canvas",
@@ -143,12 +184,12 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
             ...sampleArtwork.images[1],
             url: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&auto=format&fit=crop&q=80",
             caption: {
-              artistName: "Partho Chatterjee",
+              artistName: "Arjun",
               area: "Delhi",
               dimensions: "40\" x 40\"",
               medium: "Oil on Linen",
               year: "2026",
-              customLine: "Private Collection, Milan",
+              customLine: "Private Collection",
             }
           }
         ];
@@ -354,14 +395,14 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
       }
 
       // Otherwise, close the tour
-      onClose();
+      handleClose();
     };
 
     window.addEventListener("mousedown", handleGlobalClick, true);
     return () => {
       window.removeEventListener("mousedown", handleGlobalClick, true);
     };
-  }, [tourStep, onClose]);
+  }, [tourStep, handleClose]);
 
   const spotlightStyle = useMemo<React.CSSProperties>(() => {
     if (tourStep === null || tourStep < 0 || tourStep >= TOUR_STEPS.length) return { display: "none" };
@@ -413,13 +454,6 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
           <span className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold font-body select-none">
             Step {tourStep + 1} of {TOUR_STEPS.length}
           </span>
-          <button
-            onClick={onClose}
-            className="text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
-            title="Skip tour"
-          >
-            <X size={14} />
-          </button>
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -433,7 +467,7 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
 
         <div className="flex items-center justify-between mt-1 pt-2 border-t border-stone-100">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-xs text-stone-400 hover:text-stone-600 font-medium transition-colors cursor-pointer"
           >
             Skip Tour
@@ -451,7 +485,7 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
             <button
               onClick={() => {
                 if (tourStep === TOUR_STEPS.length - 1) {
-                  onClose();
+                  handleClose();
                 } else {
                   setTourStep((prev) => prev! + 1);
                 }

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { Download, Loader2 } from "lucide-react";
-import { exportToPDF } from "../lib/pdfExport";
-import type { Artwork, PortfolioSettings } from "../types";
+import { exportToPDF } from "@/lib/pdfExport";
+import type { Artwork, PortfolioSettings } from "@/types";
 
 interface ExportButtonProps {
   artworks: Artwork[];

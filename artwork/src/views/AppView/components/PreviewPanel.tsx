@@ -5,7 +5,7 @@ import type {
   PortfolioSettings,
   ElementLayout,
   ImageItem,
-} from "../types";
+} from "@/types";
 
 interface PreviewPanelProps {
   artworks: Artwork[];
@@ -185,6 +185,7 @@ interface DraggableBlockProps {
   deleteTitle?: string;
   onResizeText?: (newSize: number) => void;
   startFontSize?: number;
+  id?: string;
 }
 
 function DraggableBlock({
@@ -199,6 +200,7 @@ function DraggableBlock({
   deleteTitle,
   onResizeText,
   startFontSize,
+  id,
 }: DraggableBlockProps) {
   const blockRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -404,6 +406,7 @@ function DraggableBlock({
         />
       )}
       <div
+        id={id}
         ref={blockRef}
         className={`transition-shadow duration-200 rounded p-1 -m-1 group/block hover:outline hover:outline-dashed hover:outline-sienna/30 ${isDragging ? "outline-2 outline-sienna shadow-xl z-20 cursor-grabbing" : ""
           } ${className}`}
@@ -629,7 +632,8 @@ function ArtworkPage({
 
       {/* Images & Captions Stack — flex column for default flow */}
       <div className="flex flex-col gap-10 mb-6 items-center w-full">
-        {artwork.images.map((img) => {
+        {artwork.images.map((img, imgIdx) => {
+          const showTourIds = !!cropHandleId && isFirstPage && imgIdx === 0;
           const hasArtist = !!img.caption.artistName?.trim();
           const hasArea = !!img.caption.area?.trim();
           const hasDimensions = !!img.caption.dimensions?.trim();
@@ -648,6 +652,7 @@ function ArtworkPage({
 
           const captionBlock = (
             <DraggableBlock
+              id={showTourIds ? "tour-draggable-caption" : undefined}
               layout={img.captionLayout}
               onLayoutChange={(newLayout) => {
                 if (onUpdateArtwork) {
@@ -875,6 +880,7 @@ function ArtworkPage({
                 </>
               )}
               <DraggableBlock
+                id={showTourIds ? "tour-draggable-image" : undefined}
                 layout={img.imageLayout}
                 onLayoutChange={(newLayout) => {
                   if (onUpdateArtwork) {

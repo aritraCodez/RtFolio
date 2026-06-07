@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "./ui/button";
 import { PreviewPanel } from "./PreviewPanel";
-import type { Artwork, PortfolioSettings } from "../types";
+import type { Artwork, PortfolioSettings } from "@/types";
 
 interface FullscreenEditorProps {
   isOpen: boolean;

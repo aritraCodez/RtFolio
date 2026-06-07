@@ -1,8 +1,8 @@
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import { Mail, Phone, Globe, MapPin, User, ChevronDown } from "lucide-react";
-import type { PortfolioSettings } from "../types";
+import type { PortfolioSettings } from "@/types";
 
 interface HeaderEditorProps {
   settings: PortfolioSettings;

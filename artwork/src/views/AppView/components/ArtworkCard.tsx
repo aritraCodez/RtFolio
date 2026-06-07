@@ -1,6 +1,6 @@
 import { Trash2, GripVertical } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import type { Artwork } from "../types";
+import { Button } from "./ui/button";
+import type { Artwork } from "@/types";
 
 interface ArtworkCardProps {
   artwork: Artwork;

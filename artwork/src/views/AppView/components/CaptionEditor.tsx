@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Label } from "@/components/ui/label";
+import { Input } from "./ui/input";
+import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
+import { Label } from "./ui/label";
 import { ChevronDown, Bold, Italic, Underline } from "lucide-react";
-import type { Artwork, Caption, CaptionStyle } from "../types";
+import type { Artwork, Caption, CaptionStyle } from "@/types";
 
 const FONT_OPTIONS = [
   { value: "cormorant" as const, label: "Cormorant Garamond" },
