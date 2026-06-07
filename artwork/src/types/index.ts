@@ -29,6 +29,7 @@ export interface ImageItem {
   height?: number;
   caption: Caption;
   captionStyle: CaptionStyle;
+  captionPosition?: "header" | "footer";
   captionLayout?: ElementLayout;
 }
 
@@ -47,6 +48,18 @@ export interface PortfolioSettings {
   pageLayout: "single" | "grid-2";
   showBioAfterEachPhoto: boolean;
   coverImage?: string;
+  // Page header / contact info
+  headerArtistName?: string;
+  headerEmail?: string;
+  headerPhone?: string;
+  headerWebsite?: string;
+  headerLocation?: string;
+  showPageHeader?: boolean;
+  // Header styling
+  headerFont?: string;
+  headerSize?: "sm" | "md" | "lg";
+  headerAlignment?: "left" | "center" | "right";
+  headerColor?: string;
 }
 
 export interface ArtworkContextType {

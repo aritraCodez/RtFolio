@@ -6,6 +6,7 @@ import { useArtworks } from "../hooks/useArtworks";
 import { UploadZone } from "./UploadZone";
 import { ArtworkCard } from "./ArtworkCard";
 import { CaptionEditor } from "./CaptionEditor";
+import { HeaderEditor } from "./HeaderEditor";
 import { PreviewPanel } from "./PreviewPanel";
 import { ExportButton } from "./ExportButton";
 import { PrivacyPolicy } from "./PrivacyPolicy";
@@ -26,6 +27,7 @@ export function Layout() {
     addImagesToArtwork,
     removeImageFromArtwork,
     reorderImagesInArtwork,
+    updateSettings,
   } = useArtworks();
 
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -289,6 +291,13 @@ export function Layout() {
                     updateArtwork(selectedArtwork.id, partial)
                   }
                   selectedImageId={activeImageId}
+                />
+
+                <hr className="border-t border-border-warm my-0 w-full" />
+
+                <HeaderEditor
+                  settings={settings}
+                  onUpdate={updateSettings}
                 />
               </div>
             </div>

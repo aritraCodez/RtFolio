@@ -61,6 +61,15 @@ export function CaptionEditor({
     onUpdate({ images: updatedImages });
   };
 
+  const updateCaptionPosition = (position: "header" | "footer") => {
+    const updatedImages = artwork.images.map((img) =>
+      img.id === activeImage.id
+        ? { ...img, captionPosition: position, captionLayout: undefined }
+        : img
+    );
+    onUpdate({ images: updatedImages });
+  };
+
   const handleGlobalToggle = (checked: boolean) => {
     setIsGlobalStyle(checked);
     if (checked && activeImage) {
@@ -123,9 +132,38 @@ export function CaptionEditor({
     }
   };
 
+  const captionPosition = activeImage.captionPosition ?? "footer";
+
   return (
     <div className="flex flex-col gap-5">
-      <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>
+        {/* Caption Position toggle */}
+        <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
+          <button
+            type="button"
+            onClick={() => updateCaptionPosition("header")}
+            className={`px-3 py-1 rounded-md text-[12px] font-medium font-body transition-all duration-200 cursor-pointer ${
+              captionPosition === "header"
+                ? "bg-sienna text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Header
+          </button>
+          <button
+            type="button"
+            onClick={() => updateCaptionPosition("footer")}
+            className={`px-3 py-1 rounded-md text-[12px] font-medium font-body transition-all duration-200 cursor-pointer ${
+              captionPosition === "footer"
+                ? "bg-sienna text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Footer
+          </button>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="artistName">Artist Name</Label>
