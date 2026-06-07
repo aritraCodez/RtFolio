@@ -11,6 +11,14 @@ const DEFAULT_SETTINGS: PortfolioSettings = {
   artistGlobalBio: "",
   pageLayout: "single",
   showBioAfterEachPhoto: false,
+  headerFont: "cormorant",
+  headerSize: "md",
+  headerAlignment: "left",
+  headerColor: "#1C1917",
+  headerHighlightColor: "",
+  headerBold: false,
+  headerItalic: false,
+  headerUnderline: false,
 };
 
 function createImageItem(file: File): ImageItem {
@@ -31,6 +39,10 @@ function createImageItem(file: File): ImageItem {
       color: "#1C1917",
       alignment: "left",
       size: "md",
+      highlightColor: "",
+      bold: false,
+      italic: false,
+      underline: false,
     },
   };
 }

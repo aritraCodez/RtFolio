@@ -52,22 +52,20 @@ export function HeaderEditor({ settings, onUpdate }: HeaderEditorProps) {
           <button
             type="button"
             onClick={() => onUpdate({ showPageHeader: true })}
-            className={`px-3 py-1 rounded-md text-[12px] font-medium font-body transition-all duration-200 cursor-pointer ${
-              show
+            className={`px-3 py-1 rounded-md text-[12px] font-medium font-body transition-all duration-200 cursor-pointer ${show
                 ? "bg-sienna text-white shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Show
           </button>
           <button
             type="button"
             onClick={() => onUpdate({ showPageHeader: false })}
-            className={`px-3 py-1 rounded-md text-[12px] font-medium font-body transition-all duration-200 cursor-pointer ${
-              !show
+            className={`px-3 py-1 rounded-md text-[12px] font-medium font-body transition-all duration-200 cursor-pointer ${!show
                 ? "bg-sienna text-white shadow-sm"
                 : "text-muted-foreground hover:text-foreground"
-            }`}
+              }`}
           >
             Hide
           </button>
@@ -157,11 +155,10 @@ export function HeaderEditor({ settings, onUpdate }: HeaderEditorProps) {
             <button
               key={opt.value}
               type="button"
-              className={`px-3 py-2 border rounded-md text-[13px] font-body cursor-pointer transition-all duration-200 ${
-                size === opt.value
+              className={`px-3 py-2 border rounded-md text-[13px] font-body cursor-pointer transition-all duration-200 ${size === opt.value
                   ? "bg-sienna text-white border-sienna"
                   : "bg-background text-foreground border-border-warm hover:border-sienna"
-              }`}
+                }`}
               onClick={() => onUpdate({ headerSize: opt.value })}
             >
               {opt.label}
@@ -197,9 +194,8 @@ export function HeaderEditor({ settings, onUpdate }: HeaderEditorProps) {
             <button
               key={c}
               type="button"
-              className={`w-9 h-9 rounded-md border-2 border-transparent cursor-pointer transition-all duration-200 hover:shadow-md active:scale-95 ${
-                color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
-              }`}
+              className={`w-9 h-9 rounded-md border-2 border-transparent cursor-pointer transition-all duration-200 hover:shadow-md active:scale-95 ${color === c ? "ring-2 ring-foreground ring-offset-2 ring-offset-background" : ""
+                }`}
               style={{ backgroundColor: c }}
               onClick={() => onUpdate({ headerColor: c })}
               title={c}

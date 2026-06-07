@@ -39,7 +39,7 @@ export async function exportToPDF(
 ): Promise<void> {
   try {
     const A4_WIDTH = 210;
-    
+
     // Select pages only from the target container if specified (prevents exporting both sidebar and fullscreen pages)
     const livePages = container
       ? container.querySelectorAll<HTMLElement>(".preview-page")
@@ -85,38 +85,18 @@ export async function exportToPDF(
         const clone = livePages[i].cloneNode(true) as HTMLElement;
         const dims = pageDims[i];
 
-        // ── Mark caption blocks before inlineComputedStyles strips class attributes ──
-        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((el) => {
-          el.setAttribute("data-caption-block", "true");
-        });
+        // ── Caption cleanup BEFORE inlineComputedStyles ──
+        // inlineComputedStyles strips class attributes, so class-based queries must run first.
 
-        // Inline computed styles FIRST on the full unmodified clone.
-        // This ensures child indices match the live source exactly (no structure mismatch).
-        inlineComputedStyles(livePages[i], clone);
-
-        // Reset positioning styles for 1:1 scale
-        clone.style.transform = "none";
-        clone.style.transformOrigin = "top left";
-        clone.style.marginBottom = "0";
-        clone.style.width = `${dims.widthPx}px`;
-        clone.style.minHeight = `${dims.heightPx}px`;
-        clone.style.overflow = "visible";
-        clone.style.borderRadius = "0";
-        clone.style.boxShadow = "none";
-        clone.style.background = "#FFFFFF";
-
-        // ── Cleanup AFTER inlineComputedStyles using data/title attributes ──
-        // (class attributes are gone by this point, but data-* and title survive)
-
-        // Step 1: Remove editing UI elements (title attr survives inlineComputedStyles)
+        // Step 1: Remove editing UI elements
         clone.querySelectorAll<HTMLElement>("[title='Drag to reposition']").forEach((el) => el.remove());
         clone.querySelectorAll<HTMLElement>("[title='Resize Proportionally']").forEach((el) => el.remove());
         clone.querySelectorAll<HTMLElement>("[contenteditable]").forEach((el) => {
           el.removeAttribute("contenteditable");
         });
 
-        // Step 2: Rebuild commas — only between non-empty caption fields
-        clone.querySelectorAll<HTMLElement>("[data-caption-block]").forEach((captionBlock) => {
+        // Step 2: For each caption block, rebuild commas around only the filled fields
+        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((captionBlock) => {
           const textContainer = captionBlock.querySelector<HTMLElement>("div");
           if (!textContainer) return;
 
@@ -125,10 +105,10 @@ export async function exportToPDF(
             const el = child as HTMLElement;
             const text = el.textContent?.trim() ?? "";
 
-            // Skip the custom-line wrapper div (only div inside textContainer)
-            if (el.tagName === "DIV") return;
+            // Skip the custom line div (mt-1)
+            if (el.tagName === "DIV" && el.classList.contains("mt-1")) return;
 
-            // Remove empty elements and comma-only separators
+            // Remove empty elements and comma-only spans from the DOM
             if (text === "," || text === "") {
               el.remove();
               return;
@@ -137,7 +117,7 @@ export async function exportToPDF(
             dataElements.push(el);
           });
 
-          // Insert exactly one comma between each non-empty field
+          // Insert commas only between non-empty elements
           dataElements.forEach((el, index) => {
             if (index < dataElements.length - 1) {
               const comma = document.createElement("span");
@@ -147,15 +127,29 @@ export async function exportToPDF(
           });
         });
 
-        // Step 3: Remove empty placeholder spans (biography / custom line)
+        // Step 3: Remove empty placeholder elements
         clone.querySelectorAll<HTMLElement>("[data-placeholder]").forEach((el) => {
           if (!el.textContent?.trim()) el.remove();
         });
 
         // Step 4: Remove entirely empty caption blocks
-        clone.querySelectorAll<HTMLElement>("[data-caption-block]").forEach((el) => {
+        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((el) => {
           if (!el.textContent?.replace(/[\s,]/g, "")) el.remove();
         });
+
+        // Inline computed styles to freeze visual appearance (must be AFTER cleanup)
+        inlineComputedStyles(livePages[i], clone);
+
+        // Reset positioning styles for 1:1 scale using the actual layout dimensions
+        clone.style.transform = "none";
+        clone.style.transformOrigin = "top left";
+        clone.style.marginBottom = "0";
+        clone.style.width = `${dims.widthPx}px`;
+        clone.style.minHeight = `${dims.heightPx}px`;
+        clone.style.overflow = "visible";
+        clone.style.borderRadius = "0";
+        clone.style.boxShadow = "none";
+        clone.style.background = "#FFFFFF";
 
         stagingEl.appendChild(clone);
 

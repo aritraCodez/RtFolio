@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Label } from "@/components/ui/label";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Bold, Italic, Underline } from "lucide-react";
 import type { Artwork, Caption, CaptionStyle } from "../types";
 
 const FONT_OPTIONS = [
@@ -20,6 +20,7 @@ const FONT_OPTIONS = [
 ];
 
 const COLOR_SWATCHES = ["#1C1917", "#A0522D", "#B8860B", "#475569", "#FAF7F2"];
+const HIGHLIGHT_SWATCHES = ["", "#FEF08A", "#BBF7D0", "#BFDBFE", "#FBCFE8", "#FED7AA"];
 
 const SIZE_OPTIONS = [
   { value: "sm" as const, label: "Small" },
@@ -81,7 +82,7 @@ export function CaptionEditor({
     }
   };
 
-  const updateStyle = (key: keyof CaptionStyle, value: string) => {
+  const updateStyle = (key: keyof CaptionStyle, value: any) => {
     const updatedImages = artwork.images.map((img) =>
       isGlobalStyle || img.id === activeImage.id
         ? { ...img, captionStyle: { ...img.captionStyle, [key]: value } as CaptionStyle }
@@ -241,7 +242,13 @@ export function CaptionEditor({
             fontFamily: getFontFamily(activeImage.captionStyle.font),
             fontSize: getFontSize(activeImage.captionStyle.size),
             color: activeImage.captionStyle.color,
+            backgroundColor: activeImage.captionStyle.highlightColor || "transparent",
+            fontWeight: activeImage.captionStyle.bold ? "bold" : "normal",
+            fontStyle: activeImage.captionStyle.italic ? "italic" : "normal",
+            textDecoration: activeImage.captionStyle.underline ? "underline" : "none",
             textAlign: activeImage.captionStyle.alignment as any,
+            padding: activeImage.captionStyle.highlightColor ? "4px 8px" : "0",
+            borderRadius: activeImage.captionStyle.highlightColor ? "4px" : "0",
           }}
         >
           <strong>{activeImage.caption.artistName}</strong>
@@ -339,6 +346,48 @@ export function CaptionEditor({
       </div>
 
       <div className="flex flex-col gap-2">
+        <Label>Text Formatting</Label>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className={`w-10 h-10 border rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              activeImage.captionStyle.bold
+                ? "bg-sienna text-white border-sienna shadow-sm"
+                : "bg-background text-foreground border-border-warm hover:border-sienna"
+            }`}
+            onClick={() => updateStyle("bold", !activeImage.captionStyle.bold)}
+            title="Bold"
+          >
+            <Bold size={16} />
+          </button>
+          <button
+            type="button"
+            className={`w-10 h-10 border rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              activeImage.captionStyle.italic
+                ? "bg-sienna text-white border-sienna shadow-sm"
+                : "bg-background text-foreground border-border-warm hover:border-sienna"
+            }`}
+            onClick={() => updateStyle("italic", !activeImage.captionStyle.italic)}
+            title="Italic"
+          >
+            <Italic size={16} />
+          </button>
+          <button
+            type="button"
+            className={`w-10 h-10 border rounded-md flex items-center justify-center cursor-pointer transition-all duration-200 ${
+              activeImage.captionStyle.underline
+                ? "bg-sienna text-white border-sienna shadow-sm"
+                : "bg-background text-foreground border-border-warm hover:border-sienna"
+            }`}
+            onClick={() => updateStyle("underline", !activeImage.captionStyle.underline)}
+            title="Underline"
+          >
+            <Underline size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
         <Label>Color</Label>
         <div className="flex gap-2 flex-wrap items-center">
           {COLOR_SWATCHES.map((color) => (
@@ -360,6 +409,37 @@ export function CaptionEditor({
             onChange={(e) => updateStyle("color", e.target.value)}
             className="w-9 h-9 border-2 border-border-warm rounded-md cursor-pointer bg-transparent p-0 overflow-hidden"
             title="Custom color"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <Label>Highlight Color</Label>
+        <div className="flex gap-2 flex-wrap items-center">
+          {HIGHLIGHT_SWATCHES.map((color) => (
+            <button
+              key={color || "none"}
+              type="button"
+              className={`w-9 h-9 rounded-md border border-neutral-200 cursor-pointer transition-all duration-200 hover:shadow-md active:scale-95 flex items-center justify-center relative overflow-hidden ${
+                (activeImage.captionStyle.highlightColor || "") === color
+                  ? "ring-2 ring-foreground ring-offset-2 ring-offset-background"
+                  : ""
+              }`}
+              style={{ backgroundColor: color || "transparent" }}
+              onClick={() => updateStyle("highlightColor", color)}
+              title={color ? `Highlight ${color}` : "No Highlight"}
+            >
+              {!color && (
+                <span className="text-[10px] text-muted-foreground font-semibold uppercase">None</span>
+              )}
+            </button>
+          ))}
+          <input
+            type="color"
+            value={activeImage.captionStyle.highlightColor || "#FEF08A"}
+            onChange={(e) => updateStyle("highlightColor", e.target.value)}
+            className="w-9 h-9 border-2 border-border-warm rounded-md cursor-pointer bg-transparent p-0 overflow-hidden"
+            title="Custom highlight color"
           />
         </div>
       </div>
