@@ -348,7 +348,7 @@ export function PreviewPanel({
       onUpdateArtwork(artwork.id, { images: updatedImages });
     },
     [onUpdateArtwork],
-  );  const handleBiographyBlur = useCallback(
+  ); const handleBiographyBlur = useCallback(
     (artwork: Artwork, value: string) => {
       if (!onUpdateArtwork) return;
       onUpdateArtwork(artwork.id, { biography: value });
@@ -376,7 +376,7 @@ export function PreviewPanel({
       className={`flex flex-col h-full overflow-hidden ${forceScale ? "" : "bg-linear-to-br from-[#f5f5f5] to-[#fafafa] p-3"} ${className}`}
       ref={containerRef}
     >
-     
+
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="flex flex-col items-center gap-2 py-1">
@@ -411,15 +411,25 @@ export function PreviewPanel({
                     return (
                       <div
                         className="mb-8 pb-5 border-b border-stone-200"
-                        style={{ textAlign: hAlign }}
+                        style={{
+                          textAlign: hAlign,
+                          backgroundColor: settings.headerHighlightColor || "transparent",
+                          fontWeight: settings.headerBold ? "bold" : "normal",
+                          fontStyle: settings.headerItalic ? "italic" : "normal",
+                          textDecoration: settings.headerUnderline ? "underline" : "none",
+                          padding: settings.headerHighlightColor ? "12px 16px" : undefined,
+                          paddingBottom: settings.headerHighlightColor ? "12px" : "20px",
+                          borderRadius: settings.headerHighlightColor ? "6px" : "0",
+                        }}
                       >
                         {settings.headerArtistName && (
                           <h2
-                            className="m-0 mb-2 leading-tight font-semibold"
+                            className="m-0 mb-2 leading-tight"
                             style={{
                               fontFamily: getFontFamily(hFont),
                               fontSize: nameSizePx,
                               color: hColor,
+                              fontWeight: settings.headerBold ? "bold" : "600",
                             }}
                           >
                             {settings.headerArtistName}
@@ -499,12 +509,18 @@ export function PreviewPanel({
                               fontFamily: getFontFamily(img.captionStyle.font),
                               fontSize: getFontSize(img.captionStyle.size),
                               color: img.captionStyle.color,
+                              backgroundColor: img.captionStyle.highlightColor || "transparent",
+                              fontWeight: img.captionStyle.bold ? "bold" : "normal",
+                              fontStyle: img.captionStyle.italic ? "italic" : "normal",
+                              textDecoration: img.captionStyle.underline ? "underline" : "none",
                               textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"],
                               width: "100%",
                               minWidth: "280px",
                               display: "block",
                               lineHeight: "1.6",
                               whiteSpace: "normal",
+                              padding: img.captionStyle.highlightColor ? "4px 8px" : "0",
+                              borderRadius: img.captionStyle.highlightColor ? "4px" : "0",
                             }}
                           >
                             {/* All spans are inline (default) — they obey parent text-align */}

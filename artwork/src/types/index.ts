@@ -3,6 +3,10 @@ export interface CaptionStyle {
   color: string;
   alignment: "left" | "center" | "right";
   size: "sm" | "md" | "lg";
+  highlightColor?: string;
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
 }
 
 export interface Caption {
@@ -60,6 +64,10 @@ export interface PortfolioSettings {
   headerSize?: "sm" | "md" | "lg";
   headerAlignment?: "left" | "center" | "right";
   headerColor?: string;
+  headerHighlightColor?: string;
+  headerBold?: boolean;
+  headerItalic?: boolean;
+  headerUnderline?: boolean;
 }
 
 export interface ArtworkContextType {
