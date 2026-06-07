@@ -13,6 +13,7 @@ interface PreviewPanelProps {
   onUpdateArtwork?: (id: string, partial: Partial<Artwork>) => void;
   forceScale?: number;
   className?: string;
+  cropHandleId?: string;
 }
 
 function getFontFamily(font: string) {
@@ -184,7 +185,6 @@ interface DraggableBlockProps {
   deleteTitle?: string;
   onResizeText?: (newSize: number) => void;
   startFontSize?: number;
-  trimPageHeight?: boolean;
 }
 
 function DraggableBlock({
@@ -199,7 +199,6 @@ function DraggableBlock({
   deleteTitle,
   onResizeText,
   startFontSize,
-  trimPageHeight = false,
 }: DraggableBlockProps) {
   const blockRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -302,11 +301,7 @@ function DraggableBlock({
 
         if (block) {
           block.style.left = `${xPct}%`;
-          if (isPageContent && trimPageHeight) {
-            block.style.top = `${(yPct / 100) * 1003}px`;
-          } else {
-            block.style.top = `${yPct}%`;
-          }
+          block.style.top = `${yPct}%`;
         }
       };
 
@@ -348,7 +343,7 @@ function DraggableBlock({
       document.addEventListener("mousemove", handleMouseMove);
       document.addEventListener("mouseup", handleMouseUp);
     },
-    [layout, onLayoutChange, trimPageHeight],
+    [layout, onLayoutChange],
   );
 
   const handleTextResizeStart = useCallback(
@@ -386,11 +381,7 @@ function DraggableBlock({
     ? {
       position: "absolute",
       left: layout ? `${layout.x}%` : "0%",
-      top: layout
-        ? (className.includes("bio-draggable") && trimPageHeight
-          ? `${(layout.y / 100) * 1003}px`
-          : `${layout.y}%`)
-        : "0%",
+      top: layout ? `${layout.y}%` : "0%",
       width: width ?? `${100 - (layout?.x ?? 0)}%`,
       minWidth: minWidth ?? "200px",
       zIndex: 10,
@@ -469,6 +460,8 @@ interface ArtworkPageProps {
   settings: PortfolioSettings;
   scale: number;
   onUpdateArtwork?: (id: string, partial: Partial<Artwork>) => void;
+  isFirstPage?: boolean;
+  cropHandleId?: string;
 }
 
 function ArtworkPage({
@@ -476,9 +469,10 @@ function ArtworkPage({
   settings,
   scale,
   onUpdateArtwork,
+  isFirstPage,
+  cropHandleId,
 }: ArtworkPageProps) {
   const pageContentRef = useRef<HTMLDivElement>(null);
-  const [contentHeight, setContentHeight] = useState<number>(1123);
   const [livePageHeight, setLivePageHeight] = useState<number | null>(null);
 
   const handleCaptionBlur = useCallback(
@@ -538,102 +532,17 @@ function ArtworkPage({
     [artwork.id, onUpdateArtwork, setLivePageHeight],
   );
 
-  useEffect(() => {
-    if (!settings.trimPageHeight) {
-      setContentHeight(1123);
-      return;
-    }
-
-    const pageContent = pageContentRef.current;
-    if (!pageContent) return;
-
-    const calculateHeight = () => {
-      const parentRect = pageContent.getBoundingClientRect();
-      if (parentRect.height === 0) return;
-
-      const elements = pageContent.getElementsByTagName("*");
-      let maxBottom = 0;
-
-      for (let i = 0; i < elements.length; i++) {
-        const el = elements[i] as HTMLElement;
-
-        // Skip placeholders
-        if (
-          el.classList.contains("draggable-placeholder") ||
-          el.closest(".draggable-placeholder")
-        ) {
-          continue;
-        }
-
-        // Skip absolute drag handles, delete buttons, resize handles or hover controls
-        if (
-          el.classList.contains("cursor-grab") ||
-          el.tagName === "BUTTON" ||
-          el.tagName === "SVG" ||
-          el.closest("button") ||
-          el.closest(".cursor-grab")
-        ) {
-          continue;
-        }
-
-        const rect = el.getBoundingClientRect();
-        if (rect.width === 0 && rect.height === 0) continue;
-
-        const bottom = (rect.bottom - parentRect.top) / scale;
-        if (bottom > maxBottom) {
-          maxBottom = bottom;
-        }
-      }
-
-      // Add 60px padding at the bottom (matches p-15)
-      const newHeight = Math.max(300, Math.round(maxBottom + 60));
-      setContentHeight(newHeight);
-    };
-
-    // Run initially
-    calculateHeight();
-
-    // Observe changes to descendants
-    const observer = new MutationObserver(() => {
-      calculateHeight();
-      const descendants = pageContent.getElementsByTagName("*");
-      for (let i = 0; i < descendants.length; i++) {
-        resizeObserver.observe(descendants[i]);
-      }
-    });
-    observer.observe(pageContent, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      characterData: true,
-    });
-
-    const resizeObserver = new ResizeObserver(calculateHeight);
-    resizeObserver.observe(pageContent);
-    const descendants = pageContent.getElementsByTagName("*");
-    for (let i = 0; i < descendants.length; i++) {
-      resizeObserver.observe(descendants[i]);
-    }
-
-    return () => {
-      observer.disconnect();
-      resizeObserver.disconnect();
-    };
-  }, [artwork, settings.trimPageHeight, scale]);
-
   const activeHeight = livePageHeight !== null
     ? livePageHeight
     : (artwork.customPageHeight !== undefined
       ? artwork.customPageHeight
-      : (settings.trimPageHeight ? contentHeight : 1123));
+      : 1123);
 
   const customHeightStyle = livePageHeight !== null
     ? { height: `${livePageHeight}px`, minHeight: "auto" }
     : (artwork.customPageHeight !== undefined
       ? { height: `${artwork.customPageHeight}px`, minHeight: "auto" }
-      : (settings.trimPageHeight
-        ? { height: `${contentHeight}px`, minHeight: "auto" }
-        : { height: "auto", minHeight: "1123px" }));
+      : { height: "auto", minHeight: "1123px" });
 
   return (
     <div
@@ -776,7 +685,6 @@ function ArtworkPage({
                   onUpdateArtwork(artwork.id, { images: updatedImages });
                 }
               }}
-              trimPageHeight={settings.trimPageHeight}
               noPlaceholder={false}
             >
               <div
@@ -928,7 +836,7 @@ function ArtworkPage({
                     onUpdateArtwork(artwork.id, { images: updatedImages });
                   }
                 }}
-                trimPageHeight={settings.trimPageHeight}
+
               >
                 <span
                   className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
@@ -979,7 +887,6 @@ function ArtworkPage({
                 className="image-draggable"
                 width={img.width ? `${img.width}px` : "fit-content"}
                 minWidth="unset"
-                trimPageHeight={settings.trimPageHeight}
                 noPlaceholder={false}
               >
                 <ResizableImage
@@ -1015,8 +922,7 @@ function ArtworkPage({
             onUpdateArtwork?.(artwork.id, { bioLayout: lay })
           }
           className="bio-draggable"
-          trimPageHeight={settings.trimPageHeight}
-          noPlaceholder={settings.trimPageHeight}
+          noPlaceholder={false}
         >
           <hr className="border-none border-t border-border-warm my-5" />
           <p
@@ -1033,6 +939,7 @@ function ArtworkPage({
 
       {/* Dynamic Crop Handle */}
       <div
+        id={isFirstPage ? cropHandleId : undefined}
         className={`absolute bottom-0 left-0 right-0 h-6 cursor-ns-resize flex items-center justify-center z-45 group/crop select-none transition-all duration-200 ${
           livePageHeight !== null 
             ? "bg-stone-500/10" 
@@ -1098,6 +1005,7 @@ export function PreviewPanel({
   onUpdateArtwork,
   forceScale,
   className = "",
+  cropHandleId,
 }: PreviewPanelProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(forceScale ?? 0.35);
@@ -1151,6 +1059,8 @@ export function PreviewPanel({
                   settings={settings}
                   scale={scale}
                   onUpdateArtwork={onUpdateArtwork}
+                  isFirstPage={index === 0}
+                  cropHandleId={cropHandleId}
                 />
               </ScaledPage>
 

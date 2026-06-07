@@ -167,7 +167,7 @@ export function CaptionEditor({
   const captionPosition = activeImage.captionPosition ?? "footer";
 
   return (
-    <div className="flex flex-col gap-5">
+    <div id="tour-caption-editor" className="flex flex-col gap-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col">
           <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>

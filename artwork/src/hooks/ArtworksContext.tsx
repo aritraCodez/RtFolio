@@ -19,7 +19,6 @@ const DEFAULT_SETTINGS: PortfolioSettings = {
   headerBold: false,
   headerItalic: false,
   headerUnderline: false,
-  trimPageHeight: false,
 };
 
 function createImageItem(file: File): ImageItem {
@@ -82,12 +81,14 @@ export function ArtworksProvider({ children }: { children: React.ReactNode }) {
           const dbSettings = await getSettings();
           
           if (dbArtworks && dbArtworks.length > 0) {
-            // Recreate active Blob URLs for the stored Files
+            // Recreate active Blob URLs for the stored Files, keeping remote URLs intact
             const processedArtworks = dbArtworks.map((artwork) => ({
               ...artwork,
               images: artwork.images.map((img) => ({
                 ...img,
-                url: URL.createObjectURL(img.file),
+                url: img.url.startsWith("https://") || img.url.startsWith("http://")
+                  ? img.url
+                  : URL.createObjectURL(img.file),
               })),
             }));
             setArtworks(processedArtworks);

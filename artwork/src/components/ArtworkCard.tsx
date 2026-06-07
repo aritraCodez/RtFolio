@@ -38,12 +38,9 @@ export function ArtworkCard({
         />
         <div className="flex-1 min-w-0">
           <p className="font-display text-sm font-medium text-foreground m-0 truncate">
-        
+            {artwork.images[0]?.caption.artistName || "Untitled Artwork"}
           </p>
-          <p className="font-body text-xs text-muted-foreground m-0 truncate">
-            {artwork.images[0]?.caption.artistName}
-            {artwork.images[0]?.caption.customLine && ` • ${artwork.images[0]?.caption.customLine}`}
-          </p>
+
         </div>
       </div>
       <Button

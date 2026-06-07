@@ -75,7 +75,6 @@ export interface PortfolioSettings {
   headerBold?: boolean;
   headerItalic?: boolean;
   headerUnderline?: boolean;
-  trimPageHeight?: boolean;
 }
 
 export interface ArtworkContextType {
