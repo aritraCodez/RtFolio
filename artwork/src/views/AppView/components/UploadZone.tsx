@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Cloud } from "lucide-react";
-import { useArtworks } from "../hooks/useArtworks";
+import { useArtworks } from "@/hooks/useArtworks";
 
 export function UploadZone() {
   const { addArtwork } = useArtworks();

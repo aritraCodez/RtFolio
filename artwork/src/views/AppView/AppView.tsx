@@ -1,21 +1,21 @@
 import { useMemo, useState, useCallback, useRef } from "react";
 import { Settings as SettingsIcon, Plus, X, ImagePlus, Maximize2, ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useArtworks } from "../hooks/useArtworks";
-import { UploadZone } from "./UploadZone";
-import { ArtworkCard } from "./ArtworkCard";
-import { CaptionEditor } from "./CaptionEditor";
-import { HeaderEditor } from "./HeaderEditor";
-import { PreviewPanel } from "./PreviewPanel";
-import { ExportButton } from "./ExportButton";
-import { PrivacyPolicy } from "./PrivacyPolicy";
-import { DemoTour } from "./DemoTour";
-import { FullscreenEditor } from "./FullscreenEditor";
-import logoUrl from "../assets/vite.svg";
+import { Button } from "./components/ui/button";
+import { ScrollArea } from "./components/ui/scroll-area";
+import { useArtworks } from "@/hooks/useArtworks";
+import { UploadZone } from "./components/UploadZone";
+import { ArtworkCard } from "./components/ArtworkCard";
+import { CaptionEditor } from "./components/CaptionEditor";
+import { HeaderEditor } from "./components/HeaderEditor";
+import { PreviewPanel } from "./components/PreviewPanel";
+import { ExportButton } from "./components/ExportButton";
+import { PrivacyPolicy } from "./components/PrivacyView";
+import { DemoTour } from "./components/DemoTour";
+import { FullscreenEditor } from "./components/FullscreenEditor";
+import logoUrl from "@/assets/vite.svg";
 import { useLocation, useNavigate } from "react-router-dom";
 
-export function Layout() {
+export function AppView() {
   const {
     artworks,
     settings,
