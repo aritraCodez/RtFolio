@@ -44,6 +44,16 @@ function createImageItem(file: File): ImageItem {
       italic: false,
       underline: false,
     },
+    customLineStyle: {
+      font: "cormorant",
+      color: "#1C1917",
+      alignment: "left",
+      size: "md",
+      highlightColor: "",
+      bold: false,
+      italic: false,
+      underline: false,
+    },
   };
 }
 

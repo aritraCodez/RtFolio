@@ -136,6 +136,7 @@ interface DraggableBlockProps {
   onLayoutChange: (layout: ElementLayout) => void;
   children: React.ReactNode;
   className?: string;
+  noPlaceholder?: boolean;
 }
 
 function DraggableBlock({
@@ -143,6 +144,7 @@ function DraggableBlock({
   onLayoutChange,
   children,
   className = "",
+  noPlaceholder = false,
 }: DraggableBlockProps) {
   const blockRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -280,7 +282,7 @@ function DraggableBlock({
 
   return (
     <>
-      {layout && (
+      {layout && !noPlaceholder && (
         <div
           className={`invisible pointer-events-none select-none ${className}`}
           style={{ height: height ? `${height}px` : "auto" }}
@@ -605,17 +607,43 @@ export function PreviewPanel({
                             {/* Custom line on its own line */}
                             <div
                               className="mt-1"
-                              style={{ textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"] }}
+                              style={{ textAlign: (img.customLineStyle ?? img.captionStyle).alignment as React.CSSProperties["textAlign"] }}
                             >
-                              <span
-                                className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                contentEditable
-                                suppressContentEditableWarning
-                                onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
-                                data-placeholder="Custom Line (Optional)"
+                              <DraggableBlock
+                                layout={img.customLineLayout}
+                                onLayoutChange={(newLayout) => {
+                                  if (onUpdateArtwork) {
+                                    const updatedImages = artwork.images.map((i) =>
+                                      i.id === img.id ? { ...i, customLineLayout: newLayout } : i
+                                    );
+                                    onUpdateArtwork(artwork.id, { images: updatedImages });
+                                  }
+                                }}
+                                noPlaceholder
+                                className="custom-line-draggable"
                               >
-                                {img.caption.customLine || ""}
-                              </span>
+                                <span
+                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                                  contentEditable
+                                  suppressContentEditableWarning
+                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
+                                  data-placeholder="Custom Line (Optional)"
+                                  style={{
+                                    fontFamily: getFontFamily((img.customLineStyle ?? img.captionStyle).font),
+                                    fontSize: getFontSize((img.customLineStyle ?? img.captionStyle).size),
+                                    color: (img.customLineStyle ?? img.captionStyle).color,
+                                    backgroundColor: (img.customLineStyle ?? img.captionStyle).highlightColor || "transparent",
+                                    fontWeight: (img.customLineStyle ?? img.captionStyle).bold ? "bold" : "normal",
+                                    fontStyle: (img.customLineStyle ?? img.captionStyle).italic ? "italic" : "normal",
+                                    textDecoration: (img.customLineStyle ?? img.captionStyle).underline ? "underline" : "none",
+                                    padding: (img.customLineStyle ?? img.captionStyle).highlightColor ? "2px 6px" : "0",
+                                    borderRadius: (img.customLineStyle ?? img.captionStyle).highlightColor ? "3px" : "0",
+                                    display: "inline-block",
+                                  }}
+                                >
+                                  {img.caption.customLine || ""}
+                                </span>
+                              </DraggableBlock>
                             </div>
                           </div>
                         </DraggableBlock>
