@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { GripVertical, Mail, Phone, Globe, MapPin } from "lucide-react";
+import { GripVertical, Mail, Phone, Globe, MapPin, X } from "lucide-react";
 import type {
   Artwork,
   PortfolioSettings,
@@ -32,7 +32,8 @@ function getFontFamily(font: string) {
   }
 }
 
-function getFontSize(size: string) {
+function getFontSize(size: string, customSize?: number) {
+  if (customSize) return `${customSize}px`;
   switch (size) {
     case "sm": return "13px";
     case "md": return "15px";
@@ -93,7 +94,7 @@ function ResizableImage({ img, onResize }: ResizableImageProps) {
   );
 
   const style: React.CSSProperties = {
-    width: img.width ? `${img.width}px` : "100%",
+    width: img.width ? `${img.width}px` : "fit-content",
     height: img.height ? `${img.height}px` : "auto",
     maxHeight: img.height ? undefined : "480px",
   };
@@ -113,7 +114,7 @@ function ResizableImage({ img, onResize }: ResizableImageProps) {
           maxWidth: "100%",
           maxHeight: img.height ? undefined : "480px",
         }}
-        className="object-contain block rounded pointer-events-none"
+        className="block rounded pointer-events-none"
       />
       <div
         className="absolute -right-1.5 -bottom-1.5 w-4 h-4 cursor-nwse-resize bg-neutral-900 border border-white rounded-tl-sm flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-30 shadow-md"
@@ -130,6 +131,45 @@ function ResizableImage({ img, onResize }: ResizableImageProps) {
   );
 }
 
+/* ── Scaled Page wrapper for A4 sizing & dynamic margin ───────────────── */
+interface ScaledPageProps {
+  scale: number;
+  children: React.ReactNode;
+}
+
+function ScaledPage({ scale, children }: ScaledPageProps) {
+  const pageRef = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number>(1123);
+
+  useEffect(() => {
+    const el = pageRef.current;
+    if (!el) return;
+
+    setHeight(el.offsetHeight);
+
+    const observer = new ResizeObserver(() => {
+      setHeight(el.offsetHeight);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={pageRef}
+      className="preview-page bg-white rounded shadow-[0_2px_12px_rgba(0,0,0,0.1),0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden"
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: "top center",
+        width: "794px",
+        marginBottom: `${-(1 - scale) * height + 12}px`,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 /* ── Draggable element wrapper ────────────────────── */
 interface DraggableBlockProps {
   layout?: ElementLayout;
@@ -137,6 +177,12 @@ interface DraggableBlockProps {
   children: React.ReactNode;
   className?: string;
   noPlaceholder?: boolean;
+  width?: string;
+  minWidth?: string;
+  onDelete?: () => void;
+  deleteTitle?: string;
+  onResizeText?: (newSize: number) => void;
+  startFontSize?: number;
 }
 
 function DraggableBlock({
@@ -145,6 +191,12 @@ function DraggableBlock({
   children,
   className = "",
   noPlaceholder = false,
+  width,
+  minWidth,
+  onDelete,
+  deleteTitle,
+  onResizeText,
+  startFontSize,
 }: DraggableBlockProps) {
   const blockRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -155,10 +207,10 @@ function DraggableBlock({
     const block = blockRef.current;
     if (!block) return;
 
-    setHeight(block.getBoundingClientRect().height);
+    setHeight(block.offsetHeight);
 
     const observer = new ResizeObserver(() => {
-      setHeight(block.getBoundingClientRect().height);
+      setHeight(block.offsetHeight);
     });
 
     observer.observe(block);
@@ -173,8 +225,23 @@ function DraggableBlock({
       const block = blockRef.current;
       if (!block) return;
 
-      // The positioning reference container is the block's parent element
-      const contentEl = block.parentElement as HTMLElement;
+      // Find the nearest ancestor with class 'relative' that is not a draggable block itself,
+      // falling back to block.parentElement if not found.
+      let contentEl = block.parentElement as HTMLElement;
+      let cursor: HTMLElement | null = block.parentElement;
+      while (cursor) {
+        if (
+          cursor.classList.contains("relative") &&
+          !cursor.classList.contains("caption-draggable") &&
+          !cursor.classList.contains("custom-line-draggable") &&
+          !cursor.classList.contains("image-draggable") &&
+          !cursor.classList.contains("bio-draggable")
+        ) {
+          contentEl = cursor;
+          break;
+        }
+        cursor = cursor.parentElement;
+      }
       if (!contentEl) return;
 
       // Get the scale of the preview page
@@ -213,12 +280,19 @@ function DraggableBlock({
 
         // Height reference: If parent is page-content (biography), use 1003. Otherwise, use the image height.
         const isPageContent = contentEl.classList.contains("page-content");
-        const imageEl = contentEl.firstElementChild as HTMLElement;
-        const contentH = isPageContent
-          ? 1003
-          : (imageEl ? imageEl.getBoundingClientRect().height / currentScale : contentRect.height / currentScale);
+        let contentH = contentRect.height / currentScale;
+        if (isPageContent) {
+          contentH = 1003;
+        } else {
+          const imgEl = contentEl.querySelector("img");
+          if (imgEl) {
+            contentH = imgEl.getBoundingClientRect().height / currentScale;
+          }
+        }
 
-        const xPct = Math.max(0, Math.min(85, (relX / contentW) * 100));
+        const blockW = block.offsetWidth || 0;
+        const maxXPct = Math.max(0, 100 - (blockW / contentW) * 100);
+        const xPct = Math.max(0, Math.min(maxXPct, (relX / contentW) * 100));
         const yPct = isPageContent
           ? Math.max(0, Math.min(90, (relY / contentH) * 100))
           : (relY / contentH) * 100;
@@ -244,12 +318,19 @@ function DraggableBlock({
         const contentW = contentRect.width / currentScale;
 
         const isPageContent = contentEl.classList.contains("page-content");
-        const imageEl = contentEl.firstElementChild as HTMLElement;
-        const contentH = isPageContent
-          ? 1003
-          : (imageEl ? imageEl.getBoundingClientRect().height / currentScale : contentRect.height / currentScale);
+        let contentH = contentRect.height / currentScale;
+        if (isPageContent) {
+          contentH = 1003;
+        } else {
+          const imgEl = contentEl.querySelector("img");
+          if (imgEl) {
+            contentH = imgEl.getBoundingClientRect().height / currentScale;
+          }
+        }
 
-        const xPct = Math.max(0, Math.min(85, (relX / contentW) * 100));
+        const blockW = block.offsetWidth || 0;
+        const maxXPct = Math.max(0, 100 - (blockW / contentW) * 100);
+        const xPct = Math.max(0, Math.min(maxXPct, (relX / contentW) * 100));
         const yPct = isPageContent
           ? Math.max(0, Math.min(90, (relY / contentH) * 100))
           : (relY / contentH) * 100;
@@ -263,26 +344,58 @@ function DraggableBlock({
     [layout, onLayoutChange],
   );
 
-  // When layout exists: position absolutely within the parent container
-  // width stretches from x% to right edge so text-align works
-  const posStyle: React.CSSProperties = layout
+  const handleTextResizeStart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const startSize = startFontSize ?? 15;
+      const startX = e.clientX;
+      const startY = e.clientY;
+
+      const handleMouseMove = (ev: MouseEvent) => {
+        const deltaX = ev.clientX - startX;
+        const deltaY = ev.clientY - startY;
+        const delta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
+        const newSize = Math.max(8, Math.min(80, Math.round(startSize + delta / 6)));
+        if (onResizeText) {
+          onResizeText(newSize);
+        }
+      };
+
+      const handleMouseUp = () => {
+        document.removeEventListener("mousemove", handleMouseMove);
+        document.removeEventListener("mouseup", handleMouseUp);
+      };
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    },
+    [startFontSize, onResizeText],
+  );
+
+  // When layout exists or dragging: position absolutely within the parent container
+  const posStyle: React.CSSProperties = (layout || isDragging)
     ? {
       position: "absolute",
-      left: `${layout.x}%`,
-      top: `${layout.y}%`,
-      width: `${100 - layout.x}%`,
-      minWidth: "200px",
+      left: layout ? `${layout.x}%` : "0%",
+      top: layout ? `${layout.y}%` : "0%",
+      width: width ?? `${100 - (layout?.x ?? 0)}%`,
+      minWidth: minWidth ?? "200px",
       zIndex: 10,
     }
     : {
       position: "relative",
-      width: "100%",
+      width: width ?? "100%",
+      minWidth: minWidth ?? "200px",
+      marginLeft: (width === "fit-content" || width === "auto" || (width && width !== "100%")) ? "auto" : undefined,
+      marginRight: (width === "fit-content" || width === "auto" || (width && width !== "100%")) ? "auto" : undefined,
       zIndex: 10,
     };
 
   return (
     <>
-      {layout && !noPlaceholder && (
+      {(layout || isDragging) && !noPlaceholder && (
         <div
           className={`invisible pointer-events-none select-none ${className}`}
           style={{ height: height ? `${height}px` : "auto" }}
@@ -302,6 +415,34 @@ function DraggableBlock({
         >
           <GripVertical size={14} />
         </div>
+        {/* Delete / Hide handle */}
+        {onDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="absolute -right-6 top-1/2 -translate-y-1/2 w-5 h-7 flex items-center justify-center text-muted-foreground hover:text-red-650 opacity-0 group-hover/block:opacity-100 transition-opacity duration-200 rounded bg-surface-card border border-border-warm cursor-pointer z-30 active:scale-95"
+            title={deleteTitle ?? "Delete/Hide caption"}
+          >
+            <X size={12} />
+          </button>
+        )}
+        {onResizeText && (
+          <div
+            className="absolute -right-1.5 -bottom-1.5 w-4 h-4 cursor-nwse-resize bg-neutral-900 border border-white rounded-tl-sm flex items-center justify-center opacity-0 group-hover/block:opacity-100 transition-opacity z-30 shadow-md active:scale-95"
+            onMouseDown={(e) => handleTextResizeStart(e)}
+            title="Drag to resize text size"
+          >
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="1.5" className="pointer-events-none">
+              <line x1="8" y1="0" x2="0" y2="8" />
+              <line x1="8" y1="3" x2="3" y2="8" />
+              <line x1="8" y1="6" x2="6" y2="8" />
+            </svg>
+          </div>
+        )}
         {children}
       </div>
     </>
@@ -384,22 +525,17 @@ export function PreviewPanel({
         <div className="flex flex-col items-center gap-2 py-1">
           {artworks.map((artwork, index) => (
             <div key={artwork.id} className="w-full flex flex-col items-center">
-              <div
-                className="preview-page bg-white rounded shadow-[0_2px_12px_rgba(0,0,0,0.1),0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden"
-                style={{
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top center",
-                  width: "794px",
-                  marginBottom: `${-(1 - scale) * 1123 + 12}px`,
-                }}
-              >
+              <ScaledPage scale={scale}>
                 {/*
                   page-content: position:relative so absolute-positioned DraggableBlocks
                   are constrained within this div, not the outer scaled wrapper.
-                  min-h set to A4 content height (1123 - 120px padding = 1003px).
+                  min-h set to A4 height (1123px). Can be overridden if settings.trimPageHeight is enabled.
                 */}
                 <div
-                  className="page-content p-15 min-h-280.75 font-body text-foreground relative"
+                  className="page-content p-15 font-body text-foreground relative"
+                  style={{
+                    minHeight: settings.trimPageHeight ? "auto" : "1123px",
+                  }}
                 >
                   {/* ── Page Header (résumé-style contact info) ── */}
                   {settings.showPageHeader && (() => {
@@ -492,6 +628,7 @@ export function PreviewPanel({
                       const showYear = hasYear || allEmpty;
 
                       const captionPosition = img.captionPosition ?? "footer";
+                      const showCaption = !img.hideCaption;
 
                       const captionBlock = (
                         <DraggableBlock
@@ -505,11 +642,38 @@ export function PreviewPanel({
                             }
                           }}
                           className="caption-draggable"
+                          width="fit-content"
+                          minWidth="unset"
+                          onResizeText={(newSize) => {
+                            if (onUpdateArtwork) {
+                              const updatedImages = artwork.images.map((i) =>
+                                i.id === img.id
+                                  ? {
+                                      ...i,
+                                      captionStyle: {
+                                        ...i.captionStyle,
+                                        customSize: newSize,
+                                      },
+                                    }
+                                  : i
+                              );
+                              onUpdateArtwork(artwork.id, { images: updatedImages });
+                            }
+                          }}
+                          startFontSize={img.captionStyle.customSize ?? (img.captionStyle.size === "sm" ? 13 : img.captionStyle.size === "lg" ? 18 : 15)}
+                          onDelete={() => {
+                            if (onUpdateArtwork) {
+                              const updatedImages = artwork.images.map((i) =>
+                                i.id === img.id ? { ...i, hideCaption: true } : i,
+                              );
+                              onUpdateArtwork(artwork.id, { images: updatedImages });
+                            }
+                          }}
                         >
                           <div
                             style={{
                               fontFamily: getFontFamily(img.captionStyle.font),
-                              fontSize: getFontSize(img.captionStyle.size),
+                              fontSize: getFontSize(img.captionStyle.size, img.captionStyle.customSize),
                               color: img.captionStyle.color,
                               backgroundColor: img.captionStyle.highlightColor || "transparent",
                               fontWeight: img.captionStyle.bold ? "bold" : "normal",
@@ -517,7 +681,7 @@ export function PreviewPanel({
                               textDecoration: img.captionStyle.underline ? "underline" : "none",
                               textAlign: img.captionStyle.alignment as React.CSSProperties["textAlign"],
                               width: "100%",
-                              minWidth: "280px",
+                              minWidth: "unset",
                               display: "block",
                               lineHeight: "1.6",
                               whiteSpace: "normal",
@@ -603,50 +767,83 @@ export function PreviewPanel({
                                 {img.caption.year}
                               </span>
                             )}
-
-                            {/* Custom line on its own line */}
-                            <div
-                              className="mt-1"
-                              style={{ textAlign: (img.customLineStyle ?? img.captionStyle).alignment as React.CSSProperties["textAlign"] }}
-                            >
-                              <DraggableBlock
-                                layout={img.customLineLayout}
-                                onLayoutChange={(newLayout) => {
-                                  if (onUpdateArtwork) {
-                                    const updatedImages = artwork.images.map((i) =>
-                                      i.id === img.id ? { ...i, customLineLayout: newLayout } : i
-                                    );
-                                    onUpdateArtwork(artwork.id, { images: updatedImages });
-                                  }
-                                }}
-                                noPlaceholder
-                                className="custom-line-draggable"
-                              >
-                                <span
-                                  className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
-                                  contentEditable
-                                  suppressContentEditableWarning
-                                  onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
-                                  data-placeholder="Custom Line (Optional)"
-                                  style={{
-                                    fontFamily: getFontFamily((img.customLineStyle ?? img.captionStyle).font),
-                                    fontSize: getFontSize((img.customLineStyle ?? img.captionStyle).size),
-                                    color: (img.customLineStyle ?? img.captionStyle).color,
-                                    backgroundColor: (img.customLineStyle ?? img.captionStyle).highlightColor || "transparent",
-                                    fontWeight: (img.customLineStyle ?? img.captionStyle).bold ? "bold" : "normal",
-                                    fontStyle: (img.customLineStyle ?? img.captionStyle).italic ? "italic" : "normal",
-                                    textDecoration: (img.customLineStyle ?? img.captionStyle).underline ? "underline" : "none",
-                                    padding: (img.customLineStyle ?? img.captionStyle).highlightColor ? "2px 6px" : "0",
-                                    borderRadius: (img.customLineStyle ?? img.captionStyle).highlightColor ? "3px" : "0",
-                                    display: "inline-block",
-                                  }}
-                                >
-                                  {img.caption.customLine || ""}
-                                </span>
-                              </DraggableBlock>
-                            </div>
                           </div>
                         </DraggableBlock>
+                      );
+
+                      const showCustomLine = !img.hideCustomLine;
+
+                      const customLineBlock = (
+                        <div
+                          className="mt-1 w-full"
+                          style={{ textAlign: (img.customLineStyle ?? img.captionStyle).alignment as React.CSSProperties["textAlign"] }}
+                        >
+                          <DraggableBlock
+                            layout={img.customLineLayout}
+                            onLayoutChange={(newLayout) => {
+                              if (onUpdateArtwork) {
+                                const updatedImages = artwork.images.map((i) =>
+                                  i.id === img.id ? { ...i, customLineLayout: newLayout } : i
+                                );
+                                onUpdateArtwork(artwork.id, { images: updatedImages });
+                              }
+                            }}
+                            noPlaceholder
+                            className="custom-line-draggable"
+                            width="fit-content"
+                            minWidth="unset"
+                            deleteTitle="Delete/Hide custom line"
+                            onResizeText={(newSize) => {
+                              if (onUpdateArtwork) {
+                                const updatedImages = artwork.images.map((i) => {
+                                  if (i.id === img.id) {
+                                    const style = i.customLineStyle ?? i.captionStyle;
+                                    return {
+                                      ...i,
+                                      customLineStyle: {
+                                        ...style,
+                                        customSize: newSize,
+                                      },
+                                    };
+                                  }
+                                  return i;
+                                });
+                                onUpdateArtwork(artwork.id, { images: updatedImages });
+                              }
+                            }}
+                            startFontSize={(img.customLineStyle ?? img.captionStyle).customSize ?? ((img.customLineStyle ?? img.captionStyle).size === "sm" ? 13 : (img.customLineStyle ?? img.captionStyle).size === "lg" ? 18 : 15)}
+                            onDelete={() => {
+                              if (onUpdateArtwork) {
+                                const updatedImages = artwork.images.map((i) =>
+                                  i.id === img.id ? { ...i, hideCustomLine: true } : i,
+                                );
+                                onUpdateArtwork(artwork.id, { images: updatedImages });
+                              }
+                            }}
+                          >
+                            <span
+                              className="outline-none cursor-text transition-colors duration-200 hover:bg-sienna/5 focus:bg-sienna/10 focus:ring-1 focus:ring-sienna/20 rounded-xs empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/40 empty:before:italic"
+                              contentEditable
+                              suppressContentEditableWarning
+                              onBlur={(e) => handleCaptionBlur(artwork, img.id, "customLine", e.currentTarget.textContent || "")}
+                              data-placeholder="Custom Line (Optional)"
+                              style={{
+                                fontFamily: getFontFamily((img.customLineStyle ?? img.captionStyle).font),
+                                fontSize: getFontSize((img.customLineStyle ?? img.captionStyle).size, (img.customLineStyle ?? img.captionStyle).customSize),
+                                color: (img.customLineStyle ?? img.captionStyle).color,
+                                backgroundColor: (img.customLineStyle ?? img.captionStyle).highlightColor || "transparent",
+                                fontWeight: (img.customLineStyle ?? img.captionStyle).bold ? "bold" : "normal",
+                                fontStyle: (img.customLineStyle ?? img.captionStyle).italic ? "italic" : "normal",
+                                textDecoration: (img.customLineStyle ?? img.captionStyle).underline ? "underline" : "none",
+                                padding: (img.customLineStyle ?? img.captionStyle).highlightColor ? "2px 6px" : "0",
+                                borderRadius: (img.customLineStyle ?? img.captionStyle).highlightColor ? "3px" : "0",
+                                display: "inline-block",
+                              }}
+                            >
+                              {img.caption.customLine || ""}
+                            </span>
+                          </DraggableBlock>
+                        </div>
                       );
 
                       return (
@@ -654,21 +851,46 @@ export function PreviewPanel({
                           key={img.id}
                           className="relative flex flex-col gap-3 w-full"
                         >
-                          {captionPosition === "header" && captionBlock}
-                          <ResizableImage
-                            img={img}
-                            artworkId={artwork.id}
-                            isOnlyChild={artwork.images.length === 1}
-                            onResize={(width, height) => {
+                          {captionPosition === "header" && showCaption && (
+                            <>
+                              {captionBlock}
+                              {showCustomLine && customLineBlock}
+                            </>
+                          )}
+                          <DraggableBlock
+                            layout={img.imageLayout}
+                            onLayoutChange={(newLayout) => {
                               if (onUpdateArtwork) {
                                 const updatedImages = artwork.images.map((i) =>
-                                  i.id === img.id ? { ...i, width, height } : i,
+                                  i.id === img.id ? { ...i, imageLayout: newLayout } : i,
                                 );
                                 onUpdateArtwork(artwork.id, { images: updatedImages });
                               }
                             }}
-                          />
-                          {captionPosition === "footer" && captionBlock}
+                            className="image-draggable"
+                            width={img.width ? `${img.width}px` : "fit-content"}
+                            minWidth="unset"
+                          >
+                            <ResizableImage
+                              img={img}
+                              artworkId={artwork.id}
+                              isOnlyChild={artwork.images.length === 1}
+                              onResize={(width, height) => {
+                                if (onUpdateArtwork) {
+                                  const updatedImages = artwork.images.map((i) =>
+                                    i.id === img.id ? { ...i, width, height } : i,
+                                  );
+                                  onUpdateArtwork(artwork.id, { images: updatedImages });
+                                }
+                              }}
+                            />
+                          </DraggableBlock>
+                          {captionPosition === "footer" && showCaption && (
+                            <>
+                              {captionBlock}
+                              {showCustomLine && customLineBlock}
+                            </>
+                          )}
                         </div>
                       );
                     })}
@@ -696,7 +918,7 @@ export function PreviewPanel({
                     </DraggableBlock>
                   )}
                 </div>
-              </div>
+              </ScaledPage>
 
               {index < artworks.length - 1 && (
                 <div className="h-0.5 w-3/5 bg-linear-to-r from-transparent via-border-warm to-transparent my-1 mx-auto" />

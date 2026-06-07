@@ -3,6 +3,7 @@ export interface CaptionStyle {
   color: string;
   alignment: "left" | "center" | "right";
   size: "sm" | "md" | "lg";
+  customSize?: number;
   highlightColor?: string;
   bold?: boolean;
   italic?: boolean;
@@ -37,6 +38,9 @@ export interface ImageItem {
   captionPosition?: "header" | "footer";
   captionLayout?: ElementLayout;
   customLineLayout?: ElementLayout;
+  imageLayout?: ElementLayout;
+  hideCaption?: boolean;
+  hideCustomLine?: boolean;
 }
 
 export interface Artwork {
@@ -70,6 +74,7 @@ export interface PortfolioSettings {
   headerBold?: boolean;
   headerItalic?: boolean;
   headerUnderline?: boolean;
+  trimPageHeight?: boolean;
 }
 
 export interface ArtworkContextType {
