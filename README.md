@@ -1,4 +1,4 @@
-# RtFolio — Local-First Artist Portfolio Builder
+# RtFolio — Artist Portfolio Builder
 
 RtFolio is a premium, web-based tool for artists and creators to design, style, and export structured portfolio sheets (A4 layout) completely locally.
 
