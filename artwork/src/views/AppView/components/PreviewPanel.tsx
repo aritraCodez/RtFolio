@@ -470,7 +470,6 @@ interface ArtworkPageProps {
 function ArtworkPage({
   artwork,
   settings,
-  scale,
   onUpdateArtwork,
   isFirstPage,
   cropHandleId,
