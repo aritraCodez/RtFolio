@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS: PortfolioSettings = {
   headerBold: false,
   headerItalic: false,
   headerUnderline: false,
+  trimPageHeight: false,
 };
 
 function createImageItem(file: File): ImageItem {
@@ -54,6 +55,8 @@ function createImageItem(file: File): ImageItem {
       italic: false,
       underline: false,
     },
+    hideCaption: false,
+    hideCustomLine: false,
   };
 }
 

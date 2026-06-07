@@ -72,7 +72,12 @@ export function CaptionEditor({
   const updateCaption = (key: keyof Caption, value: string) => {
     const updatedImages = artwork.images.map((img) =>
       img.id === activeImage.id
-        ? { ...img, caption: { ...img.caption, [key]: value } }
+        ? {
+            ...img,
+            hideCaption: key !== "customLine" ? false : img.hideCaption,
+            hideCustomLine: key === "customLine" ? false : img.hideCustomLine,
+            caption: { ...img.caption, [key]: value },
+          }
         : img
     );
     onUpdate({ images: updatedImages });
@@ -103,8 +108,12 @@ export function CaptionEditor({
     const styleKey = styleTarget === "caption" ? "captionStyle" : "customLineStyle";
     const updatedImages = artwork.images.map((img) => {
       const currentStyle = img[styleKey] ?? img.captionStyle;
+      const partialStyle = { ...currentStyle, [key]: value };
+      if (key === "size") {
+        delete partialStyle.customSize;
+      }
       return isGlobalStyle || img.id === activeImage.id
-        ? { ...img, [styleKey]: { ...currentStyle, [key]: value } as CaptionStyle }
+        ? { ...img, [styleKey]: partialStyle as CaptionStyle }
         : img;
     });
     onUpdate({ images: updatedImages });
@@ -139,7 +148,10 @@ export function CaptionEditor({
     }
   };
 
-  const getFontSize = (size: string) => {
+  const getFontSize = (size: string, customSize?: number) => {
+    if (customSize) {
+      return `${customSize}px`;
+    }
     switch (size) {
       case "sm":
         return "13px";
@@ -159,22 +171,120 @@ export function CaptionEditor({
       <div className="flex items-center justify-between gap-3">
         <div className="flex flex-col">
           <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>
-          {activeImage.captionLayout && (
-            <button
-              type="button"
-              onClick={() => {
-                const updatedImages = artwork.images.map((img) =>
-                  img.id === activeImage.id
-                    ? { ...img, captionLayout: undefined }
-                    : img
-                );
-                onUpdate({ images: updatedImages });
-              }}
-              className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit mt-0.5"
-            >
-              Reset Caption Position
-            </button>
-          )}
+          <div className="flex flex-col gap-0.5 mt-0.5">
+            {activeImage.hideCaption ? (
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedImages = artwork.images.map((img) =>
+                    img.id === activeImage.id
+                      ? { ...img, hideCaption: false }
+                      : img
+                  );
+                  onUpdate({ images: updatedImages });
+                }}
+                className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+              >
+                Show Caption and custom Line on Page
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedImages = artwork.images.map((img) =>
+                    img.id === activeImage.id
+                      ? { ...img, hideCaption: true }
+                      : img
+                  );
+                  onUpdate({ images: updatedImages });
+                }}
+                className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+              >
+                Hide Caption and Custom Line from Page
+              </button>
+            )}
+            {activeImage.caption.customLine && (
+              activeImage.hideCustomLine ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updatedImages = artwork.images.map((img) =>
+                      img.id === activeImage.id
+                        ? { ...img, hideCustomLine: false }
+                        : img
+                    );
+                    onUpdate({ images: updatedImages });
+                  }}
+                  className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+                >
+                  Show Custom Line on Page
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const updatedImages = artwork.images.map((img) =>
+                      img.id === activeImage.id
+                        ? { ...img, hideCustomLine: true }
+                        : img
+                    );
+                    onUpdate({ images: updatedImages });
+                  }}
+                  className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+                >
+                  Hide Custom Line from Page
+                </button>
+              )
+            )}
+            {activeImage.captionLayout && !activeImage.hideCaption && (
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedImages = artwork.images.map((img) =>
+                    img.id === activeImage.id
+                      ? { ...img, captionLayout: undefined }
+                      : img
+                  );
+                  onUpdate({ images: updatedImages });
+                }}
+                className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+              >
+                Reset Caption Position
+              </button>
+            )}
+            {activeImage.customLineLayout && !activeImage.hideCustomLine && (
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedImages = artwork.images.map((img) =>
+                    img.id === activeImage.id
+                      ? { ...img, customLineLayout: undefined }
+                      : img
+                  );
+                  onUpdate({ images: updatedImages });
+                }}
+                className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+              >
+                Reset Custom Line Position
+              </button>
+            )}
+            {activeImage.imageLayout && (
+              <button
+                type="button"
+                onClick={() => {
+                  const updatedImages = artwork.images.map((img) =>
+                    img.id === activeImage.id
+                      ? { ...img, imageLayout: undefined }
+                      : img
+                  );
+                  onUpdate({ images: updatedImages });
+                }}
+                className="text-[11px] text-sienna hover:underline font-medium cursor-pointer text-left w-fit"
+              >
+                Reset Image Position
+              </button>
+            )}
+          </div>
         </div>
         {/* Caption Position toggle */}
         <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
@@ -300,7 +410,7 @@ export function CaptionEditor({
           className="m-0 leading-relaxed wrap-break-words"
           style={{
             fontFamily: getFontFamily(activeImage.captionStyle.font),
-            fontSize: getFontSize(activeImage.captionStyle.size),
+            fontSize: getFontSize(activeImage.captionStyle.size, activeImage.captionStyle.customSize),
             color: activeImage.captionStyle.color,
             backgroundColor: activeImage.captionStyle.highlightColor || "transparent",
             fontWeight: activeImage.captionStyle.bold ? "bold" : "normal",
@@ -324,7 +434,7 @@ export function CaptionEditor({
               <span
                 style={{
                   fontFamily: getFontFamily((activeImage.customLineStyle ?? activeImage.captionStyle).font),
-                  fontSize: getFontSize((activeImage.customLineStyle ?? activeImage.captionStyle).size),
+                  fontSize: getFontSize((activeImage.customLineStyle ?? activeImage.captionStyle).size, (activeImage.customLineStyle ?? activeImage.captionStyle).customSize),
                   color: (activeImage.customLineStyle ?? activeImage.captionStyle).color,
                   backgroundColor: (activeImage.customLineStyle ?? activeImage.captionStyle).highlightColor || "transparent",
                   fontWeight: (activeImage.customLineStyle ?? activeImage.captionStyle).bold ? "bold" : "normal",
@@ -405,14 +515,14 @@ export function CaptionEditor({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label>Size</Label>
+        <Label>Size {activeStyle.customSize ? `(Custom: ${activeStyle.customSize}px)` : ""}</Label>
         <div className="grid grid-cols-3 gap-2">
           {SIZE_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               type="button"
               className={`px-3 py-2 border rounded-md text-[13px] font-body cursor-pointer transition-all duration-200 ${
-                activeStyle.size === opt.value
+                activeStyle.size === opt.value && !activeStyle.customSize
                   ? "bg-sienna text-white border-sienna"
                   : "bg-background text-foreground border-border-warm hover:border-sienna"
               }`}

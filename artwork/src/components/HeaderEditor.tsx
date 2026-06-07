@@ -210,6 +210,32 @@ export function HeaderEditor({ settings, onUpdate }: HeaderEditorProps) {
           />
         </div>
       </div>
+
+      <hr className="border-t border-border-warm my-0 w-full" />
+
+      {/* Page Layout Settings */}
+      <div className="flex flex-col gap-3">
+        <h4 className="font-body text-[13px] font-semibold text-muted-foreground m-0 uppercase tracking-[0.5px]">
+          Page Layout Settings
+        </h4>
+        <div className="flex items-start gap-2.5 mt-1">
+          <input
+            type="checkbox"
+            id="trimPageHeight"
+            checked={settings.trimPageHeight ?? false}
+            onChange={(e) => onUpdate({ trimPageHeight: e.target.checked })}
+            className="rounded border-border-warm text-sienna focus:ring-sienna/20 h-4 w-4 cursor-pointer accent-sienna mt-0.5"
+          />
+          <div className="flex flex-col gap-0.5">
+            <Label htmlFor="trimPageHeight" className="cursor-pointer text-xs text-foreground select-none font-medium">
+              Trim Page Height (Fit page to content)
+            </Label>
+            <p className="text-[11px] text-muted-foreground m-0 leading-normal">
+              Removes extra white space at the bottom of each page in the editor and PDF download.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

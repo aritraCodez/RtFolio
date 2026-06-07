@@ -154,7 +154,14 @@ export async function exportToPDF(
 
         // Step 4b: Remove entirely empty custom line blocks
         clone.querySelectorAll<HTMLElement>("[data-custom-line-block]").forEach((el) => {
-          if (!el.textContent?.trim()) el.remove();
+          if (!el.textContent?.trim()) {
+            const wrapper = el.closest(".mt-1");
+            if (wrapper) {
+              wrapper.remove();
+            } else {
+              el.remove();
+            }
+          }
         });
 
         // Reset positioning styles for 1:1 scale using the actual layout dimensions
