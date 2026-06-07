@@ -103,8 +103,14 @@ export async function exportToPDF(
         // ── Cleanup AFTER inlineComputedStyles using data/title attributes ──
 
         // Step 1: Remove editing UI elements
+        clone.querySelectorAll<HTMLElement>("[data-pdf-ignore='true']").forEach((el) => el.remove());
         clone.querySelectorAll<HTMLElement>("[title='Drag to reposition']").forEach((el) => el.remove());
         clone.querySelectorAll<HTMLElement>("[title='Resize Proportionally']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[title='Drag to resize text size']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[title='Drag up/down to cut page height manually']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[title='Reset page height to default']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[title='Delete/Hide caption']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[title='Delete/Hide custom line']").forEach((el) => el.remove());
         clone.querySelectorAll<HTMLElement>("[contenteditable]").forEach((el) => {
           el.removeAttribute("contenteditable");
         });

@@ -50,6 +50,7 @@ export interface Artwork {
   order: number;
   imageLayout?: ElementLayout;
   bioLayout?: ElementLayout;
+  customPageHeight?: number;
 }
 
 export interface PortfolioSettings {
