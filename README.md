@@ -18,7 +18,7 @@ flowchart TD
     classDef main fill:#A0522D,stroke:#A0522D,color:#fff;
     classDef storage fill:#FAF7F2,stroke:#D9CFC3,color:#1C1917;
     classDef action fill:#0F2B5C,stroke:#0F2B5C,color:#fff;
-    
+     
     %% Flows
     UserEdit[User Action: Upload / Edit Caption / Style]:::action --> ReactState[React State Update]:::main
     ReactState --> SyncEffect[Auto-Sync useEffect]:::main
