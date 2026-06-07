@@ -21,9 +21,9 @@ export function ExportButton({ artworks, settings }: ExportButtonProps) {
     setIsLoading(true);
     try {
       await exportToPDF(artworks, settings);
-    } catch (error) {
+    } catch (error: any) {
       console.error("PDF export error:", error);
-      alert("Failed to export PDF. Please try again.");
+      alert(`Failed to export PDF: ${error?.message || error}`);
     } finally {
       setIsLoading(false);
     }

@@ -139,12 +139,12 @@ export function CaptionEditor({
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="title">Title</Label>
+        <Label htmlFor="area">Area</Label>
         <Input
-          id="title"
-          value={activeImage.caption.title}
-          onChange={(e) => updateCaption("title", e.target.value)}
-          placeholder="Artwork title"
+          id="area"
+          value={activeImage.caption.area}
+          onChange={(e) => updateCaption("area", e.target.value)}
+          placeholder="Inner Space"
           className="bg-background border-border-warm text-foreground hover:border-sienna transition-all duration-200 focus-visible:ring-sienna/10 focus-visible:border-sienna h-10 px-3 py-2"
         />
       </div>
@@ -208,8 +208,6 @@ export function CaptionEditor({
         >
           <strong>{activeImage.caption.artistName}</strong>
           {activeImage.caption.artistName && ", "}
-          <em>{activeImage.caption.title}</em>
-          {activeImage.caption.title && ", "}
           {activeImage.caption.dimensions}
           {activeImage.caption.dimensions && ", "}
           {activeImage.caption.medium}
