@@ -31,7 +31,7 @@ export function PrivacyPolicy() {
         <div className="flex flex-col gap-8">
           {/* Card 1: Local Processing */}
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-lg bg-[#FAF7F2] border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
+            <div className="w-8 h-8 rounded-lg bg-parchment border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
               <Cpu size={16} />
             </div>
             <div>
@@ -46,7 +46,7 @@ export function PrivacyPolicy() {
 
           {/* Card 2: Local Session Persistence */}
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-lg bg-[#FAF7F2] border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
+            <div className="w-8 h-8 rounded-lg bg-parchment border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
               <Database size={16} />
             </div>
             <div>
@@ -61,7 +61,7 @@ export function PrivacyPolicy() {
 
           {/* Card 3: Secure PDF Export */}
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-lg bg-[#FAF7F2] border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
+            <div className="w-8 h-8 rounded-lg bg-parchment border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
               <Shield size={16} />
             </div>
             <div>
@@ -76,7 +76,7 @@ export function PrivacyPolicy() {
 
           {/* Card 4: Offline Capability */}
           <div className="flex gap-4">
-            <div className="w-8 h-8 rounded-lg bg-[#FAF7F2] border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
+            <div className="w-8 h-8 rounded-lg bg-parchment border border-border-warm flex items-center justify-center text-sienna shrink-0 mt-1">
               <WifiOff size={16} />
             </div>
             <div>

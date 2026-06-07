@@ -48,7 +48,7 @@ export function UploadZone() {
 
   return (
     <div
-      className={`w-full max-w-lg border-2 border-dashed border-border-warm rounded-xl py-10 px-5 text-center bg-gradient-to-br from-background to-surface-card transition-all duration-300 cursor-pointer hover:border-sienna ${
+      className={`w-full max-w-lg border-2 border-dashed border-border-warm rounded-xl py-10 px-5 text-center bg-linear-to-br from-background to-surface-card transition-all duration-300 cursor-pointer hover:border-sienna ${
         isDragging
           ? "border-sienna bg-sienna/5 shadow-[0_0_12px_rgba(160,82,45,0.1)]"
           : ""
