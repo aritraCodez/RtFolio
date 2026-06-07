@@ -1,153 +1,158 @@
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2canvas from "html2canvas-pro";
 import type { Artwork, PortfolioSettings } from "../types";
 
-function getFontFamily(font: string) {
-  switch (font) {
-    case "cormorant":
-      return "'Cormorant Garamond', serif";
-    case "eb-garamond":
-      return "'EB Garamond', serif";
-    case "playfair":
-      return "'Playfair Display', serif";
-    case "lora":
-      return "'Lora', serif";
-    case "cinzel":
-      return "'Cinzel', serif";
-    case "dm-sans":
-      return "'DM Sans', sans-serif";
-    case "inter":
-      return "'Inter', sans-serif";
-    case "montserrat":
-      return "'Montserrat', sans-serif";
-    case "outfit":
-      return "'Outfit', sans-serif";
-    case "roboto":
-      return "'Roboto', sans-serif";
-    case "mono":
-      return "monospace";
-    default:
-      return "'Cormorant Garamond', serif";
-  }
-}
+/**
+ * Recursively copies computed styles from source DOM elements onto cloned elements.
+ * This guarantees the cloned elements look exactly like their live versions,
+ * regardless of parent container style inheritance or cascade rules.
+ */
+function inlineComputedStyles(source: Element, target: HTMLElement) {
+  if (!(source instanceof HTMLElement)) return;
 
-function getFontSize(size: string) {
-  switch (size) {
-    case "sm":
-      return "13px";
-    case "md":
-      return "15px";
-    case "lg":
-      return "18px";
-    default:
-      return "15px";
-  }
-}
- 
-export async function exportToPDF(
-  artworks: Artwork[],
-  settings: PortfolioSettings,
-): Promise<void> {
-  const pdf = new jsPDF("p", "mm", "a4");
-  const A4_WIDTH = 210;
-  const A4_HEIGHT = 297;
-
-  for (let i = 0; i < artworks.length; i++) {
-    const artwork = artworks[i];
-
-    // Create an off-screen render container
-    const container = document.createElement("div");
-    container.style.cssText = `
-      width: 794px;
-      background: #FAF7F2;
-      padding: 60px;
-      font-family: 'DM Sans', sans-serif;
-      color: #1C1917;
-      position: fixed;
-      left: -9999px;
-      top: -9999px;
-    `;
-
-    // Build vertical stack of images and their captions
-    const contentHTML = artwork.images
-      .map((img) => {
-        const widthStyle = img.width ? `${img.width}px` : "100%";
-        const heightStyle = img.height ? `${img.height}px` : "auto";
-        const maxHeightStyle = img.height ? "none" : "480px";
-
-        // Build the caption HTML for this image
-        const captionHTML = `
-          <strong>${img.caption.artistName}</strong>
-          ${img.caption.artistName ? ", " : ""}
-          <em>${img.caption.title}</em>
-          ${img.caption.title ? ", " : ""}
-          ${img.caption.dimensions}
-          ${img.caption.dimensions ? ", " : ""}
-          ${img.caption.medium}
-          ${img.caption.medium ? ", " : ""}
-          ${img.caption.year}
-          ${img.caption.customLine ? `<br />${img.caption.customLine}` : ""}
-        `;
-
-        return `
-          <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-bottom: 32px;">
-            <div style="width: ${widthStyle}; height: ${heightStyle}; max-height: ${maxHeightStyle}; border-radius: 4px; overflow: hidden; display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
-              <img src="${img.url}" style="width: 100%; height: 100%; object-fit: contain; display: block;" />
-            </div>
-            <div style="
-              font-family: ${getFontFamily(img.captionStyle.font)};
-              font-size: ${getFontSize(img.captionStyle.size)};
-              color: ${img.captionStyle.color};
-              text-align: ${img.captionStyle.alignment};
-              width: 100%;
-              line-height: 1.6;
-            ">
-              ${captionHTML}
-            </div>
-          </div>
-        `;
-      })
-      .join("");
-
-    const biographyHTML =
-      settings.showBioAfterEachPhoto && artwork.biography
-        ? `
-      <hr style="border:none;border-top:1px solid #D9CFC3;margin:20px 0;" />
-      <p style="font-size:13px;color:#78716C;line-height:1.8;margin:0;">
-        ${artwork.biography.replace(/\n/g, "<br />")}
-      </p>
-    `
-        : "";
-
-    container.innerHTML = `
-      <div style="position:relative; min-height:1123px; display: flex; flex-direction: column; align-items: center;">
-        <div style="width: 100%;">
-          ${contentHTML}
-        </div>
-        ${biographyHTML}
-      </div>
-    `;
-
-    document.body.appendChild(container);
-
+  const computed = getComputedStyle(source);
+  for (let i = 0; i < computed.length; i++) {
+    const prop = computed[i];
+    const val = computed.getPropertyValue(prop);
     try {
-      const canvas = await html2canvas(container, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
-
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-
-      if (i > 0) {
-        pdf.addPage();
-      }
-
-      pdf.addImage(imgData, "JPEG", 0, 0, A4_WIDTH, A4_HEIGHT);
-    } finally {
-      document.body.removeChild(container);
+      target.style.setProperty(prop, val);
+    } catch {
+      // skip properties that can't be set inline
     }
   }
+  target.removeAttribute("class");
 
-  pdf.save(`${settings.portfolioTitle || "portfolio"}.pdf`);
+  // Recurse into children
+  const srcChildren = source.children;
+  const tgtChildren = target.children;
+  for (let i = 0; i < Math.min(srcChildren.length, tgtChildren.length); i++) {
+    inlineComputedStyles(srcChildren[i], tgtChildren[i] as HTMLElement);
+  }
+}
+
+/* ─── PDF Export ─────────────────────────────────────────── */
+
+export async function exportToPDF(
+  _artworks: Artwork[],
+  settings: PortfolioSettings,
+  container?: HTMLElement,
+): Promise<void> {
+  try {
+    const A4_WIDTH = 210;
+    
+    // Select pages only from the target container if specified (prevents exporting both sidebar and fullscreen pages)
+    const livePages = container
+      ? container.querySelectorAll<HTMLElement>(".preview-page")
+      : document.querySelectorAll<HTMLElement>(".preview-page");
+
+    if (livePages.length === 0) {
+      throw new Error("No preview pages found in the DOM to export.");
+    }
+
+    // Pre-calculate dimensions for all pages based on their live computed layout sizes
+    const pageDims = Array.from(livePages).map((el) => {
+      const w = el.offsetWidth || 794;
+      const h = el.offsetHeight || 1123;
+      return {
+        widthPx: w,
+        heightPx: h,
+        widthMm: A4_WIDTH,
+        heightMm: (h / w) * A4_WIDTH,
+      };
+    });
+
+    // Initialize jsPDF with the first page's aspect ratio and dimensions
+    const firstPage = pageDims[0];
+    const pdf = new jsPDF({
+      orientation: "p",
+      unit: "mm",
+      format: [firstPage.widthMm, firstPage.heightMm],
+    });
+
+    const stagingEl = document.createElement("div");
+    stagingEl.style.cssText = `
+      position: fixed;
+      left: -9999px;
+      top: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0;
+    `;
+    document.body.appendChild(stagingEl);
+
+    try {
+      for (let i = 0; i < livePages.length; i++) {
+        const clone = livePages[i].cloneNode(true) as HTMLElement;
+        const dims = pageDims[i];
+
+        // Inline computed styles to freeze visual appearance
+        inlineComputedStyles(livePages[i], clone);
+
+        // Reset positioning styles for 1:1 scale using the actual layout dimensions
+        clone.style.transform = "none";
+        clone.style.transformOrigin = "top left";
+        clone.style.marginBottom = "0";
+        clone.style.width = `${dims.widthPx}px`;
+        clone.style.minHeight = `${dims.heightPx}px`;
+        clone.style.overflow = "visible";
+        clone.style.borderRadius = "0";
+        clone.style.boxShadow = "none";
+        clone.style.background = "#FFFFFF";
+
+        // Strip editing elements
+        clone.querySelectorAll<HTMLElement>("[title='Drag to reposition']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[title='Resize Proportionally']").forEach((el) => el.remove());
+        clone.querySelectorAll<HTMLElement>("[contenteditable]").forEach((el) => {
+          el.removeAttribute("contenteditable");
+        });
+
+        // Remove empty placeholders (captions or biography) so they don't print in the PDF
+        clone.querySelectorAll<HTMLElement>("[data-placeholder]").forEach((el) => {
+          if (!el.textContent?.trim()) {
+            el.remove();
+          }
+        });
+
+        // Remove any caption blocks that are entirely empty (only containing commas/whitespace)
+        clone.querySelectorAll<HTMLElement>(".caption-draggable").forEach((el) => {
+          const text = el.textContent?.replace(/[\s,]/g, "");
+          if (!text) {
+            el.remove();
+          }
+        });
+
+        stagingEl.appendChild(clone);
+
+        try {
+          // html2canvas-pro natively supports oklch() color function and modern CSS
+          const canvas = await html2canvas(clone, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: "#FFFFFF",
+            width: dims.widthPx,
+            height: dims.heightPx,
+          });
+
+          const imgData = canvas.toDataURL("image/jpeg", 0.95);
+
+          if (i > 0) {
+            pdf.addPage([dims.widthMm, dims.heightMm]);
+          }
+
+          pdf.addImage(imgData, "JPEG", 0, 0, dims.widthMm, dims.heightMm);
+        } finally {
+          stagingEl.removeChild(clone);
+        }
+      }
+    } finally {
+      document.body.removeChild(stagingEl);
+    }
+
+    pdf.save(`${settings.portfolioTitle || "portfolio"}.pdf`);
+  } catch (error: any) {
+    console.error("Internal PDF export error:", error);
+    alert(`Internal export error:\n${error?.message || error}\n\nStack:\n${error?.stack}`);
+    throw error;
+  }
 }
