@@ -71,3 +71,6 @@ To run RtFolio locally in development mode:
    npm run dev
    ```
 3. Open `http://localhost:5173` in your browser.
+
+### Live Test
+Open Live `https://rtfolio.onrender.com/` in your browser.
