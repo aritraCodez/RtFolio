@@ -168,8 +168,8 @@ export function CaptionEditor({
 
   return (
     <div id="tour-caption-editor" className="flex flex-col gap-5">
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex flex-col">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex flex-col min-w-0">
           <h3 className="font-display text-lg font-semibold text-foreground m-0">Caption & Metadata</h3>
           <div className="flex flex-col gap-0.5 mt-0.5">
             {activeImage.hideCaption ? (
@@ -287,7 +287,7 @@ export function CaptionEditor({
           </div>
         </div>
         {/* Caption Position toggle */}
-        <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
+        <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px] self-start sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => updateCaptionPosition("header")}
@@ -455,7 +455,7 @@ export function CaptionEditor({
 
       <hr className="border-t border-border-warm my-0 w-full" />
       <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <h4 className="font-body text-[13px] font-semibold text-muted-foreground m-0 uppercase tracking-[0.5px]">Caption Styling</h4>
           <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
             <button
@@ -490,8 +490,8 @@ export function CaptionEditor({
             onChange={(e) => handleGlobalToggle(e.target.checked)}
             className="rounded border-border-warm text-sienna focus:ring-sienna/20 h-4 w-4 cursor-pointer accent-sienna"
           />
-          <Label htmlFor="globalStyling" className="cursor-pointer text-xs text-muted-foreground select-none font-medium">
-            Make style adjustments global (apply to all images for Font,Size,Alignment,Color)
+          <Label htmlFor="globalStyling" className="cursor-pointer text-xs text-muted-foreground select-none font-medium leading-snug">
+            Apply styles to all images (font, size, alignment, color)
           </Label>
         </div>
       </div>
