@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback, useRef } from "react";
-import { Settings as SettingsIcon, Plus, X, ImagePlus, Maximize2, ArrowLeft } from "lucide-react";
+import { Settings as SettingsIcon, Plus, X, ImagePlus, Maximize2, ArrowLeft, Images, Pencil, Eye } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { useArtworks } from "@/hooks/useArtworks";
@@ -35,6 +35,7 @@ export function AppView() {
   const [draggedImgIndex, setDraggedImgIndex] = useState<number | null>(null);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState<"artworks" | "edit" | "preview">("edit");
   const addImagesRef = useRef<HTMLInputElement>(null);
 
   // Tour State
@@ -98,42 +99,47 @@ export function AppView() {
     [selectedArtwork, addImagesToArtwork],
   );
 
+  const sidebarVisible = mobilePanel === "artworks";
+  const editorVisible = mobilePanel === "edit";
+  const previewVisible = mobilePanel === "preview";
+
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground font-body">
+    <div className="flex flex-col h-dvh max-h-dvh bg-background text-foreground font-body overflow-hidden">
       {/* Top Navigation */}
-      <header className="flex items-center justify-between px-6 py-4 bg-white border-b border-border-warm shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-        <div className="flex items-center gap-3">
-          <img src={logoUrl} alt="RtFolio logo" className="w-8 h-8 object-contain shrink-0" />
-          <div className="flex items-baseline gap-2">
-            <h1 className="font-display text-[28px] font-semibold m-0 text-sienna">RtFolio</h1>
-            <p className="text-xs text-muted-foreground m-0 uppercase tracking-[0.5px]">Artist Portfolio Builder</p>
+      <header className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 bg-white border-b border-border-warm shadow-[0_2px_8px_rgba(0,0,0,0.04)] shrink-0 gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <img src={logoUrl} alt="RtFolio logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain shrink-0" />
+          <div className="flex items-baseline gap-2 min-w-0">
+            <h1 className="font-display text-xl sm:text-[28px] font-semibold m-0 text-sienna">RtFolio</h1>
+            <p className="hidden sm:block text-xs text-muted-foreground m-0 uppercase tracking-[0.5px] truncate">Artist Portfolio Builder</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           {currentView === "privacy" && (
             <button
               onClick={() => {
                 navigate("/");
               }}
-              className="text-xs text-muted-foreground hover:text-sienna cursor-pointer transition-colors duration-200 select-none mr-2 font-medium flex items-center gap-1"
+              className="text-xs text-muted-foreground hover:text-sienna cursor-pointer transition-colors duration-200 select-none font-medium flex items-center gap-1"
             ><ArrowLeft size={14} />
-              Back to Portfolio Editor
+              <span className="hidden sm:inline">Back to Portfolio Editor</span>
+              <span className="sm:hidden">Back</span>
             </button>
           )}
           {currentView === "editor" && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               <Button
                 id="tour-trigger"
                 variant="outline"
                 size="sm"
                 onClick={() => setIsTourActive(true)}
-                className="text-sienna border-sienna hover:bg-sienna/5 font-body font-medium h-9 px-3.5 rounded-md flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
+                className="text-sienna border-sienna hover:bg-sienna/5 font-body font-medium h-8 sm:h-9 px-2 sm:px-3.5 rounded-md flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98] transition-all"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                   <circle cx="12" cy="12" r="10" />
                   <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
                 </svg>
-                Demo Tour
+                <span className="hidden sm:inline">Demo Tour</span>
               </Button>
               <span id="tour-export">
                 <ExportButton artworks={selectedArtwork ? [selectedArtwork] : sortedArtworks} settings={settings} />
@@ -147,9 +153,12 @@ export function AppView() {
       {currentView === "privacy" ? (
         <PrivacyPolicy />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-[260px_1fr] lg:grid-cols-[280px_1fr_340px] gap-0 flex-1 overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-[260px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)_minmax(0,340px)] gap-0 flex-1 min-h-0 overflow-hidden">
         {/* Left Sidebar - Artwork List */}
-        <aside id="tour-sidebar" className="hidden md:flex flex-col bg-surface-card border-r border-border-warm overflow-hidden">
+        <aside
+          id="tour-sidebar"
+          className={`${sidebarVisible ? "flex" : "hidden"} md:flex flex-col bg-surface-card border-r border-border-warm overflow-hidden min-h-0`}
+        >
           <h2 className="font-display text-base font-semibold p-4 m-0 border-b border-border-warm text-foreground">Artworks</h2>
           <ScrollArea className="flex-1">
             {artworks.length === 0 ? (
@@ -171,7 +180,10 @@ export function AppView() {
                       artwork={artwork}
                       isSelected={selectedId === artwork.id}
                       isDragging={draggedIndex === index}
-                      onSelect={() => setSelectedId(artwork.id)}
+                      onSelect={() => {
+                        setSelectedId(artwork.id);
+                        setMobilePanel("edit");
+                      }}
                       onDelete={() => removeArtwork(artwork.id)}
                     />
                   </div>
@@ -188,6 +200,7 @@ export function AppView() {
                       const files = Array.from((e.target as HTMLInputElement).files || []);
                       if (files.length > 0) {
                         addArtwork(files);
+                        setMobilePanel("edit");
                       }
                     };
                     input.click();
@@ -226,15 +239,17 @@ export function AppView() {
         </aside>
 
         {/* Center Editor Panel */}
-        <main className="flex flex-col bg-background overflow-hidden">
+        <main
+          className={`${editorVisible ? "flex" : "hidden"} ${previewVisible ? "md:hidden lg:flex" : "md:flex"} flex-col bg-background overflow-hidden min-h-0`}
+        >
           {!selectedArtwork ? (
-            <div className="flex items-center justify-center flex-1 p-10">
+            <div className="flex items-center justify-center flex-1 p-4 sm:p-10">
               <UploadZone />
             </div>
           ) : (
             <div className="flex flex-col h-full overflow-y-auto">
               {/* Image Gallery */}
-              <div id="tour-images" className="p-5 md:px-6 bg-white border-b border-border-warm shrink-0">
+              <div id="tour-images" className="p-4 sm:p-5 md:px-6 bg-white border-b border-border-warm shrink-0">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-display text-base font-semibold m-0 text-foreground">
                     Images ({selectedArtwork.images.length})
@@ -255,7 +270,7 @@ export function AppView() {
                     style={{ display: "none" }}
                   />
                 </div>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(72px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-2 sm:gap-3">
                   {selectedArtwork.images.map((img, idx) => {
                     const isSelected = img.id === activeImageId;
                     return (
@@ -281,7 +296,7 @@ export function AppView() {
                         />
                         {selectedArtwork.images.length > 1 && (
                           <button
-                            className="absolute top-1 right-1 w-5.5 h-5.5 flex items-center justify-center bg-black/65 text-white border-none rounded-full cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-650"
+                            className="absolute top-1 right-1 w-6 h-6 sm:w-5.5 sm:h-5.5 flex items-center justify-center bg-black/65 text-white border-none rounded-full cursor-pointer opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-650"
                             onClick={(e) => {
                               e.stopPropagation();
                               removeImageFromArtwork(selectedArtwork.id, img.id);
@@ -304,7 +319,7 @@ export function AppView() {
                 </div>
               </div>
 
-              <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-8">
+              <div className="flex-1 p-4 sm:p-6 overflow-y-auto flex flex-col gap-8">
                 <CaptionEditor
                   artwork={selectedArtwork}
                   onUpdate={(partial) =>
@@ -325,8 +340,11 @@ export function AppView() {
         </main>
 
         {/* Right Preview Panel */}
-        <aside id="tour-preview" className="hidden lg:flex flex-col bg-background border-l border-border-warm overflow-hidden">
-          <h2 className="font-display text-base font-semibold p-4 m-0 border-b border-border-warm text-foreground flex items-center justify-between">
+        <aside
+          id="tour-preview"
+          className={`${previewVisible ? "flex" : "hidden"} lg:flex flex-col bg-background border-l border-border-warm overflow-hidden min-h-0`}
+        >
+          <h2 className="font-display text-base font-semibold p-3 sm:p-4 m-0 border-b border-border-warm text-foreground flex items-center justify-between">
             <span>Preview</span>
             <Button
               id="tour-fullscreen"
@@ -350,6 +368,41 @@ export function AppView() {
       </div>
       )}
 
+      {currentView === "editor" && (
+        <nav className="lg:hidden flex items-stretch border-t border-border-warm bg-white shrink-0 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
+          <button
+            type="button"
+            onClick={() => setMobilePanel("artworks")}
+            className={`md:hidden flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium font-body cursor-pointer transition-colors ${
+              mobilePanel === "artworks" ? "text-sienna" : "text-muted-foreground"
+            }`}
+          >
+            <Images size={18} />
+            Artworks
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePanel("edit")}
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium font-body cursor-pointer transition-colors ${
+              mobilePanel === "edit" ? "text-sienna" : "text-muted-foreground"
+            }`}
+          >
+            <Pencil size={18} />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePanel("preview")}
+            className={`flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium font-body cursor-pointer transition-colors ${
+              mobilePanel === "preview" ? "text-sienna" : "text-muted-foreground"
+            }`}
+          >
+            <Eye size={18} />
+            Preview
+          </button>
+        </nav>
+      )}
+
 
       {/* Fullscreen A4 Editor Modal */}
       <FullscreenEditor
@@ -365,6 +418,7 @@ export function AppView() {
         isActive={isTourActive}
         onClose={() => setIsTourActive(false)}
         onTriggerFullscreen={setIsFullscreen}
+        onNavigatePanel={setMobilePanel}
       />
     </div>
   );

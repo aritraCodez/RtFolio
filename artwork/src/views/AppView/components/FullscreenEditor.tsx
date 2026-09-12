@@ -21,10 +21,11 @@ export function FullscreenEditor({
 }: FullscreenEditorProps) {
   const [zoomScale, setZoomScale] = useState(1.0);
 
-  // Reset zoom scale to 100% when the editor opens
+  // Fit the A4 page to the viewport when the editor opens
   useEffect(() => {
     if (isOpen) {
-      setZoomScale(1.0);
+      const available = Math.min(window.innerWidth - 32, 794);
+      setZoomScale(Math.min(1, Math.max(0.35, available / 794)));
     }
   }, [isOpen]);
 
@@ -33,10 +34,10 @@ export function FullscreenEditor({
   return (
     <div className="fixed inset-0 bg-[#2a2a2a] z-2000 flex flex-col animate-fade-in">
       {/* Top PDF-like Toolbar */}
-      <div className="bg-[#1e1e1e] text-white border-b border-neutral-800 px-6 py-3 flex items-center justify-between z-50 shadow-md">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display text-lg font-semibold text-white m-0">Interactive A4 Page Editor</h1>
-          <span className="text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 rounded-full font-body">
+      <div className="bg-[#1e1e1e] text-white border-b border-neutral-800 px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between z-50 shadow-md gap-2 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0">
+          <h1 className="font-display text-sm sm:text-lg font-semibold text-white m-0 truncate">A4 Page Editor</h1>
+          <span className="hidden md:inline-flex text-xs text-neutral-400 bg-neutral-800 border border-neutral-700 px-2.5 py-0.5 rounded-full font-body">
             Full-Scale Editing & Dragging
           </span>
         </div>
@@ -76,12 +77,12 @@ export function FullscreenEditor({
           className="bg-neutral-800 hover:bg-neutral-700 text-white font-body font-medium h-9 px-4 rounded-md flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
         >
           <X size={16} />
-          Close
+          <span className="hidden sm:inline">Close</span>
         </Button>
       </div>
 
       {/* Viewport container */}
-      <div className="flex-1 overflow-auto p-12 bg-[#2a2a2a] flex justify-center items-start">
+      <div className="flex-1 overflow-auto p-3 sm:p-8 md:p-12 bg-[#2a2a2a] flex justify-center items-start">
         <div className="w-full max-w-5xl flex justify-center">
           <PreviewPanel
             artworks={artworks}

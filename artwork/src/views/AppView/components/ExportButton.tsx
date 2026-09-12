@@ -33,17 +33,18 @@ export function ExportButton({ artworks, settings }: ExportButtonProps) {
     <Button
       onClick={handleExport}
       disabled={isLoading || artworks.length === 0}
-      className="w-full bg-sienna hover:bg-sienna-light hover:shadow-md text-white font-body font-medium h-10 px-5 rounded-md flex items-center justify-center gap-2 cursor-pointer transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+      className="w-auto bg-sienna hover:bg-sienna-light hover:shadow-md text-white font-body font-medium h-8 sm:h-10 px-3 sm:px-5 rounded-md flex items-center justify-center gap-1.5 sm:gap-2 cursor-pointer transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
     >
       {isLoading ? (
         <>
           <Loader2 size={16} className="animate-spin" />
-          Generating...
+          <span className="hidden sm:inline">Generating...</span>
         </>
       ) : (
         <>
           <Download size={16} />
-          Download PDF
+          <span className="sm:hidden">PDF</span>
+          <span className="hidden sm:inline">Download PDF</span>
         </>
       )}
     </Button>

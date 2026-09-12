@@ -118,7 +118,7 @@ function ResizableImage({ img, onResize }: ResizableImageProps) {
         className="block rounded pointer-events-none"
       />
       <div
-        className="absolute -right-1.5 -bottom-1.5 w-4 h-4 cursor-nwse-resize bg-neutral-900 border border-white rounded-tl-sm flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity z-30 shadow-md"
+        className="absolute -right-1.5 -bottom-1.5 w-4 h-4 cursor-nwse-resize bg-neutral-900 border border-white rounded-tl-sm flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/img:opacity-100 transition-opacity z-30 shadow-md"
         onMouseDown={(e) => handleResizeStart(e)}
         title="Resize Proportionally"
         data-pdf-ignore="true"
@@ -414,7 +414,7 @@ function DraggableBlock({
       >
         {/* Drag handle */}
         <div
-          className="absolute -left-6 top-1/2 -translate-y-1/2 w-5 h-7 flex items-center justify-center text-muted-foreground cursor-grab opacity-0 group-hover/block:opacity-100 transition-opacity duration-200 rounded bg-surface-card border border-border-warm active:cursor-grabbing active:opacity-100 active:bg-background z-30"
+          className="absolute -left-6 top-1/2 -translate-y-1/2 w-5 h-7 flex items-center justify-center text-muted-foreground cursor-grab opacity-100 md:opacity-0 md:group-hover/block:opacity-100 transition-opacity duration-200 rounded bg-surface-card border border-border-warm active:cursor-grabbing active:opacity-100 active:bg-background z-30"
           onMouseDown={handleMouseDown}
           title="Drag to reposition"
           data-pdf-ignore="true"
@@ -430,7 +430,7 @@ function DraggableBlock({
               e.stopPropagation();
               onDelete();
             }}
-            className="absolute -right-6 top-1/2 -translate-y-1/2 w-5 h-7 flex items-center justify-center text-muted-foreground hover:text-red-650 opacity-0 group-hover/block:opacity-100 transition-opacity duration-200 rounded bg-surface-card border border-border-warm cursor-pointer z-30 active:scale-95"
+            className="absolute -right-6 top-1/2 -translate-y-1/2 w-5 h-7 flex items-center justify-center text-muted-foreground hover:text-red-650 opacity-100 md:opacity-0 md:group-hover/block:opacity-100 transition-opacity duration-200 rounded bg-surface-card border border-border-warm cursor-pointer z-30 active:scale-95"
             title={deleteTitle ?? "Delete/Hide caption"}
             data-pdf-ignore="true"
           >
@@ -439,7 +439,7 @@ function DraggableBlock({
         )}
         {onResizeText && (
           <div
-            className="absolute -right-1.5 -bottom-1.5 w-4 h-4 cursor-nwse-resize bg-neutral-900 border border-white rounded-tl-sm flex items-center justify-center opacity-0 group-hover/block:opacity-100 transition-opacity z-30 shadow-md active:scale-95"
+            className="absolute -right-1.5 -bottom-1.5 w-4 h-4 cursor-nwse-resize bg-neutral-900 border border-white rounded-tl-sm flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/block:opacity-100 transition-opacity z-30 shadow-md active:scale-95"
             onMouseDown={(e) => handleTextResizeStart(e)}
             title="Drag to resize text size"
             data-pdf-ignore="true"

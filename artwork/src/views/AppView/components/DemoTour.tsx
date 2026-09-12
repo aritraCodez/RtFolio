@@ -91,9 +91,10 @@ interface DemoTourProps {
   isActive: boolean;
   onClose: () => void;
   onTriggerFullscreen?: (open: boolean) => void;
+  onNavigatePanel?: (panel: "artworks" | "edit" | "preview") => void;
 }
 
-export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourProps) {
+export function DemoTour({ isActive, onClose, onTriggerFullscreen, onNavigatePanel }: DemoTourProps) {
   const { artworks, addArtwork, updateArtwork, removeArtwork } = useArtworks();
   const [tourStep, setTourStep] = useState<number | null>(null);
   const [demoArtworkId, setDemoArtworkId] = useState<string | null>(null);
@@ -153,10 +154,18 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
       } else {
         onTriggerFullscreen?.(false);
       }
+
+      if (tourStep === 1) {
+        onNavigatePanel?.("artworks");
+      } else if (tourStep === 4 || tourStep === 5) {
+        onNavigatePanel?.("preview");
+      } else if (tourStep < 6 || tourStep > 10) {
+        onNavigatePanel?.("edit");
+      }
     } else {
       onTriggerFullscreen?.(false);
     }
-  }, [isActive, tourStep, onTriggerFullscreen]);
+  }, [isActive, tourStep, onTriggerFullscreen, onNavigatePanel]);
 
   // Load sample content for the demo artwork
   useEffect(() => {
@@ -209,7 +218,7 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
     const viewportH = window.innerHeight;
     const minPadding = 16;
     const gap = 12;
-    const tooltipWidth = 320;
+    const tooltipWidth = Math.min(320, viewportW - minPadding * 2);
     const measuredHeight = tooltipRef.current ? tooltipRef.current.offsetHeight : 220;
 
     if (!step.targetId) {
@@ -446,7 +455,7 @@ export function DemoTour({ isActive, onClose, onTriggerFullscreen }: DemoTourPro
       <div
         ref={tooltipRef}
         style={tooltipStyle}
-        className="w-80 bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.15)] rounded-2xl p-5 z-2100 flex flex-col gap-4 animate-tooltip-fade text-stone-800"
+        className="max-w-[calc(100vw-2rem)] w-80 bg-white border border-stone-200/80 shadow-[0_10px_30px_rgba(0,0,0,0.15)] rounded-2xl p-4 sm:p-5 z-2100 flex flex-col gap-4 animate-tooltip-fade text-stone-800"
       >
         {arrowClass && <div className={arrowClass} style={arrowStyle} />}
 

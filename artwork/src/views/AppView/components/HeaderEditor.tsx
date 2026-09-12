@@ -44,11 +44,11 @@ export function HeaderEditor({ settings, onUpdate }: HeaderEditorProps) {
   return (
     <div className="flex flex-col gap-5">
       {/* Section heading + Show/Hide toggle */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <h3 className="font-display text-lg font-semibold text-foreground m-0">
           Page Header
         </h3>
-        <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px]">
+        <div className="flex items-center gap-1 bg-surface-card border border-border-warm rounded-lg p-[3px] self-start sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => onUpdate({ showPageHeader: true })}
